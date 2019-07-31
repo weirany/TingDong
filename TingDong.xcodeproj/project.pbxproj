@@ -8,23 +8,27 @@
 
 /* Begin PBXBuildFile section */
 		023EE69822D3175C0035592B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69722D3175C0035592B /* AppDelegate.swift */; };
-		023EE69A22D3175C0035592B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69922D3175C0035592B /* ViewController.swift */; };
+		023EE69A22D3175C0035592B /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69922D3175C0035592B /* MainController.swift */; };
 		023EE69D22D3175C0035592B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 023EE69B22D3175C0035592B /* Main.storyboard */; };
 		023EE69F22D317600035592B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 023EE69E22D317600035592B /* Assets.xcassets */; };
 		023EE6A222D317600035592B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 023EE6A022D317600035592B /* LaunchScreen.storyboard */; };
 		026C579D22D5A78D00BF0E36 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 026C579C22D5A78D00BF0E36 /* CloudKit.framework */; };
+		02863FDD22D7059400F55059 /* words_mini.json in Resources */ = {isa = PBXBuildFile; fileRef = 02863FDC22D7059300F55059 /* words_mini.json */; };
+		02863FDF22D8594000F55059 /* words.json in Resources */ = {isa = PBXBuildFile; fileRef = 02863FDE22D8594000F55059 /* words.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		023EE69422D3175C0035592B /* TingDong.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TingDong.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		023EE69722D3175C0035592B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		023EE69922D3175C0035592B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		023EE69922D3175C0035592B /* MainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
 		023EE69C22D3175C0035592B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		023EE69E22D317600035592B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		023EE6A122D317600035592B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		023EE6A322D317600035592B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		026C579A22D5A78500BF0E36 /* TingDong.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TingDong.entitlements; sourceTree = "<group>"; };
 		026C579C22D5A78D00BF0E36 /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
+		02863FDC22D7059300F55059 /* words_mini.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = words_mini.json; sourceTree = "<group>"; };
+		02863FDE22D8594000F55059 /* words.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = words.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,11 +65,13 @@
 			children = (
 				026C579A22D5A78500BF0E36 /* TingDong.entitlements */,
 				023EE69722D3175C0035592B /* AppDelegate.swift */,
-				023EE69922D3175C0035592B /* ViewController.swift */,
+				023EE69922D3175C0035592B /* MainController.swift */,
 				023EE69B22D3175C0035592B /* Main.storyboard */,
 				023EE69E22D317600035592B /* Assets.xcassets */,
 				023EE6A022D317600035592B /* LaunchScreen.storyboard */,
 				023EE6A322D317600035592B /* Info.plist */,
+				02863FDE22D8594000F55059 /* words.json */,
+				02863FDC22D7059300F55059 /* words_mini.json */,
 			);
 			path = TingDong;
 			sourceTree = "<group>";
@@ -146,7 +152,9 @@
 			files = (
 				023EE6A222D317600035592B /* LaunchScreen.storyboard in Resources */,
 				023EE69F22D317600035592B /* Assets.xcassets in Resources */,
+				02863FDD22D7059400F55059 /* words_mini.json in Resources */,
 				023EE69D22D3175C0035592B /* Main.storyboard in Resources */,
+				02863FDF22D8594000F55059 /* words.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -157,7 +165,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				023EE69A22D3175C0035592B /* ViewController.swift in Sources */,
+				023EE69A22D3175C0035592B /* MainController.swift in Sources */,
 				023EE69822D3175C0035592B /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
