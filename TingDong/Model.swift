@@ -29,3 +29,29 @@ public class StateCount {
     class var max: Int { return 42231 }
 }
 	
+public class Word {
+    let wordId: Int
+    let word: String
+    let translation: String
+    
+    init(record: CKRecord) {
+        self.wordId = record["wordId"] as! Int
+        self.word = record["word"] as! String
+        self.translation = record["translation"] as! String
+    }
+}
+
+public class TouchedOrNot {
+    let touched: String
+    let untouched: String
+    
+    init(record: CKRecord) {
+        self.touched = record["touched"] as! String
+        self.untouched = record["untouched"] as! String
+    }
+    
+    init() {
+        self.touched = ""
+        self.untouched = (2...StateCount.max).reduce("1") { numStr, num in "\(numStr)|\(num)" }
+    }
+}
