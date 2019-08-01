@@ -2,10 +2,11 @@ import UIKit
 import CloudKit
 
 class MainController: UIViewController {
-
+    
     var publicDB: CKDatabase!
     var privateDB: CKDatabase!
-    
+    var stateCount: StateCount!
+
     var wordId: Int = 0
     var words: [WordDto] = []
     
@@ -30,7 +31,44 @@ class MainController: UIViewController {
             }
         }
         
-        generatePublicData()
+        readLatestStateCount { () in
+            // todo:
+        }
+    }
+    
+    func pickNextWord(completion: @escaping (CKRecord?, Error?) -> Void) {
+    }
+    
+    func stateGroupToPick(completion: @escaping (WordState) -> Void) {
+        
+    }
+    
+    func readLatestStateCount(completion: @escaping () -> Void) {
+        let pred = NSPredicate(value: true)
+        let query = CKQuery(recordType: "StateCount", predicate: pred)
+        let sort = NSSortDescriptor(key: "creationDate", ascending: false)
+        query.sortDescriptors = [sort]
+        let queryOp = CKQueryOperation(query: query)
+        queryOp.resultsLimit = 1
+        queryOp.recordFetchedBlock = { record in
+            self.stateCount = StateCount(record: record)
+        }
+        queryOp.queryCompletionBlock = {
+            queryCursor, error in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            if self.stateCount == nil {
+                self.stateCount = StateCount()
+            }
+            completion()
+        }
+        privateDB.add(queryOp)
+    }
+    
+    func addStateCount(completion: @escaping (CKRecord?, Error?) -> Void) {
+//        let record = CKRecord(recordType: "StateCount")
+//        record["]
     }
 
     func generatePublicData() -> Void {
@@ -79,4 +117,8 @@ struct WordDto: Codable {
         case word = "w"
         case translation = "t"
     }
+}
+
+enum WordState {
+    case a, b, c, d, e
 }

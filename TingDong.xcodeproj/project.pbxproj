@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		023D7BC722F2AA0C00825524 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023D7BC622F2AA0C00825524 /* Model.swift */; };
 		023EE69822D3175C0035592B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69722D3175C0035592B /* AppDelegate.swift */; };
 		023EE69A22D3175C0035592B /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69922D3175C0035592B /* MainController.swift */; };
 		023EE69D22D3175C0035592B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 023EE69B22D3175C0035592B /* Main.storyboard */; };
@@ -18,6 +19,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		023D7BC622F2AA0C00825524 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		023EE69422D3175C0035592B /* TingDong.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TingDong.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		023EE69722D3175C0035592B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		023EE69922D3175C0035592B /* MainController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainController.swift; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 				023EE6A322D317600035592B /* Info.plist */,
 				02863FDE22D8594000F55059 /* words.json */,
 				02863FDC22D7059300F55059 /* words_mini.json */,
+				023D7BC622F2AA0C00825524 /* Model.swift */,
 			);
 			path = TingDong;
 			sourceTree = "<group>";
@@ -165,6 +168,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				023D7BC722F2AA0C00825524 /* Model.swift in Sources */,
 				023EE69A22D3175C0035592B /* MainController.swift in Sources */,
 				023EE69822D3175C0035592B /* AppDelegate.swift in Sources */,
 			);
