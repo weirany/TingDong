@@ -5,10 +5,13 @@ class MainController: UIViewController {
     
     var publicDB: CKDatabase!
     var privateDB: CKDatabase!
+
     var stateCount: StateCount!
-    var wordJustReadFromCloud: Word!
     var touchedOrNot: TouchedOrNot!
-    
+
+    var nextAToEWordIdFromCloud: Int!
+    var nextWord: Word!
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -44,29 +47,94 @@ class MainController: UIViewController {
     }
     
     func readNextWord(completion: @escaping () -> Void) {
+        // reset first
+        nextWord = nil
+        
         // if Cx4 > Sum(touched) and F is not empty: get from F.
         if (self.stateCount.c * 4 > self.stateCount.sum && (self.stateCount.sum < StateCount.max)) {
             self.readWordFromCloud(wordId: touchedOrNot.randomFWordId) { () in
-                // todo: use the 'self.wordJustReadFromCloud'
             }
         }
         else {
-            // todo: get from random(A to E). 
+            readNextAToEFromCloud(anyAToEWord: false) { () in
+                if let nextAToEWordId = self.nextAToEWordIdFromCloud {
+                    self.readWordFromCloud(wordId: nextAToEWordId) { () in
+                    }
+                }
+                else {
+                    if self.stateCount.sum < StateCount.max {
+                        self.readWordFromCloud(wordId: self.touchedOrNot.randomFWordId) { () in
+                        }
+                    }
+                    else {
+                        self.readNextAToEFromCloud(anyAToEWord: true) { () in
+                            if let nextAToEWordId = self.nextAToEWordIdFromCloud {
+                                self.readWordFromCloud(wordId: nextAToEWordId) { () in
+                                }
+                            }
+                            else {
+                                fatalError("no more untouched words, but failed to read any word from A to E!")
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
     
+    func readNextAToEFromCloud(anyAToEWord: Bool, completion: @escaping () -> Void) {
+        //    - How frequently each category got picked
+        //    ○ D: 1| 0
+        //    ○ C: 2 | 1, 2
+        //    ○ E: 3 | 3, 4, 5
+        //    ○ B: 5 | 6, 7, 8, 9, 10
+        //    ○ A: 5 | 11, 12, 13, 14, 15
+        let ran = Int.random(in: 0..<16)
+        var stateToPickNext = 0
+        switch ran {
+        case 0: stateToPickNext = 4
+        case 1, 2: stateToPickNext = 3
+        case 3, 4, 5: stateToPickNext = 5
+        case 6, 7, 8, 9, 10: stateToPickNext = 2
+        case 11, 12, 13, 14, 15: stateToPickNext = 1
+        default:
+            fatalError("Got a random number outside of [0,15]")
+        }
+        
+        nextAToEWordIdFromCloud = nil
+        // logic: the earliest from a given state, but it has to be dued.
+        let pred = anyAToEWord ? NSPredicate(value: true) : NSPredicate(format: "(state == %d) AND (dueAt < %@)", stateToPickNext, NSDate())
+        let query = CKQuery(recordType: "AEWord", predicate: pred)
+        let queryOp = CKQueryOperation(query: query)
+        let sort = NSSortDescriptor(key: "dueAt", ascending: true)
+        query.sortDescriptors = [sort]
+        queryOp.resultsLimit = 1
+        queryOp.recordFetchedBlock = { record in
+            self.nextAToEWordIdFromCloud = (record["wordId"] as! Int)
+        }
+        queryOp.queryCompletionBlock = { queryCursor, error in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            completion()
+        }
+        privateDB.add(queryOp)
+    }
+    
     func readWordFromCloud(wordId: Int, completion: @escaping () -> Void) {
-        wordJustReadFromCloud = nil
         let pred = NSPredicate(format: "wordId == %d", wordId)
         let query = CKQuery(recordType: "Word", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            self.wordJustReadFromCloud = Word(record: record)
+            self.nextWord = Word(record: record)
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
                 fatalError(error.localizedDescription)
+            }
+            if self.nextWord == nil {
+                fatalError("failed to read wordId:\(wordId) from cloud!")
             }
             completion()
         }
