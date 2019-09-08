@@ -6,12 +6,8 @@ class MainController: UIViewController {
     var publicDB: CKDatabase!
     var privateDB: CKDatabase!
     var stateCount: StateCount!
-    var nextWord: Word!
+    var wordJustReadFromCloud: Word!
     var touchedOrNot: TouchedOrNot!
-    
-    // for fill public word list only
-    var wordId: Int = 0
-    var words: [WordDto] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,8 +36,8 @@ class MainController: UIViewController {
     }
     
     func initAllLocalVarsFromCloud(completion: @escaping () -> Void) {
-        readLatestStateCount { () in
-            self.readTouchedOrNot { () in
+        readLatestStateCountFromCloud { () in
+            self.readTouchedOrNotFromCloud { () in
                 completion()
             }
         }
@@ -50,13 +46,34 @@ class MainController: UIViewController {
     func readNextWord(completion: @escaping () -> Void) {
         // if Cx4 > Sum(touched) and F is not empty: get from F.
         if (self.stateCount.c * 4 > self.stateCount.sum && (self.stateCount.sum < StateCount.max)) {
-            
+            self.readWordFromCloud(wordId: touchedOrNot.randomFWordId) { () in
+                // todo: use the 'self.wordJustReadFromCloud'
+            }
         }
         else {
+            // todo: get from random(A to E). 
         }
     }
     
-    func readTouchedOrNot(completion: @escaping () -> Void) {
+    func readWordFromCloud(wordId: Int, completion: @escaping () -> Void) {
+        wordJustReadFromCloud = nil
+        let pred = NSPredicate(format: "wordId == %d", wordId)
+        let query = CKQuery(recordType: "Word", predicate: pred)
+        let queryOp = CKQueryOperation(query: query)
+        queryOp.resultsLimit = 1
+        queryOp.recordFetchedBlock = { record in
+            self.wordJustReadFromCloud = Word(record: record)
+        }
+        queryOp.queryCompletionBlock = { queryCursor, error in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            completion()
+        }
+        publicDB.add(queryOp)
+    }
+    
+    func readTouchedOrNotFromCloud(completion: @escaping () -> Void) {
         let pred = NSPredicate(value: true)
         let query = CKQuery(recordType: "TouchedOrNot", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
@@ -69,12 +86,20 @@ class MainController: UIViewController {
                 fatalError(error.localizedDescription)
             }
             if self.touchedOrNot == nil {
-                self.touchedOrNot = TouchedOrNot()
-                self.writeTouchedOrNot { () in }
+                fatalError("Got nil while getting TouchedOrNot from cloud")
             }
             completion()
         }
-        privateDB.add(queryOp)
+        if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized) {
+            privateDB.add(queryOp)
+        }
+        else {
+            self.touchedOrNot = TouchedOrNot()
+            self.writeTouchedOrNot { () in
+                UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized)
+                self.privateDB.add(queryOp)
+            }
+        }
     }
     
     func writeTouchedOrNot(completion: @escaping () -> Void) {
@@ -89,7 +114,7 @@ class MainController: UIViewController {
         }
     }
 
-    func readLatestStateCount(completion: @escaping () -> Void) {
+    func readLatestStateCountFromCloud(completion: @escaping () -> Void) {
         let pred = NSPredicate(value: true)
         let query = CKQuery(recordType: "StateCount", predicate: pred)
         let sort = NSSortDescriptor(key: "creationDate", ascending: false)
@@ -104,12 +129,20 @@ class MainController: UIViewController {
                 fatalError(error.localizedDescription)
             }
             if self.stateCount == nil {
-                self.stateCount = StateCount()
-                self.writeLatestStateCount { () in }
+                fatalError("Got nil while getting State Count from cloud")
             }
             completion()
         }
-        privateDB.add(queryOp)
+        if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized) {
+            privateDB.add(queryOp)
+        }
+        else {
+            self.stateCount = StateCount()
+            self.writeLatestStateCount { () in
+                UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
+                self.privateDB.add(queryOp)
+            }
+        }
     }
     
     func writeLatestStateCount(completion: @escaping () -> Void) {
@@ -126,60 +159,4 @@ class MainController: UIViewController {
             completion()
         }
     }
-    
-    func addStateCount(completion: @escaping (CKRecord?, Error?) -> Void) {
-//        let record = CKRecord(recordType: "StateCount")
-//        record["]
-    }
-
-    func generatePublicData() -> Void {
-        // load json file into array obj
-        if let path = Bundle.main.path(forResource: "words", ofType: "json") {
-            do {
-                let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
-                do {
-                    words = try JSONDecoder().decode([WordDto].self, from: data)
-                    addNewWordToPublicUntilDone(wordId: 1, words: words)
-                } catch {
-                    print(error)
-                }
-            } catch {
-                print(error)
-            }
-        }
-    }
-    
-    func addNewWordToPublicUntilDone(wordId: Int, words: [WordDto]) -> Void {
-        let word = words[wordId - 1]
-        let record = CKRecord(recordType: "Word")
-        record["wordId"] = wordId
-        record["word"] = word.word
-        record["translation"] = word.translation
-        print(wordId)
-        publicDB.save(record) { (record, error) -> Void in
-            if let e = error {
-                print(e)
-            }
-            else {
-                let nextWordId = wordId + 1
-                if nextWordId <= words.count {
-                    self.addNewWordToPublicUntilDone(wordId: nextWordId, words: words)
-                }
-            }
-        }
-    }
-}
-
-struct WordDto: Codable {
-    let word: String
-    let translation: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case word = "w"
-        case translation = "t"
-    }
-}
-
-enum WordState {
-    case a, b, c, d, e
 }

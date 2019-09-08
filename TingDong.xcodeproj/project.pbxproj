@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		023D5A962324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023D5A952324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift */; };
+		023D5A982324C27F00CB731A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023D5A972324C27F00CB731A /* Constants.swift */; };
 		023D7BC722F2AA0C00825524 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023D7BC622F2AA0C00825524 /* Model.swift */; };
 		023EE69822D3175C0035592B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69722D3175C0035592B /* AppDelegate.swift */; };
 		023EE69A22D3175C0035592B /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69922D3175C0035592B /* MainController.swift */; };
@@ -19,6 +21,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		023D5A952324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitializePublicZoneOneTimeCode.swift; sourceTree = "<group>"; };
+		023D5A972324C27F00CB731A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		023D7BC622F2AA0C00825524 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		023EE69422D3175C0035592B /* TingDong.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TingDong.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		023EE69722D3175C0035592B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -75,6 +79,8 @@
 				02863FDE22D8594000F55059 /* words.json */,
 				02863FDC22D7059300F55059 /* words_mini.json */,
 				023D7BC622F2AA0C00825524 /* Model.swift */,
+				023D5A952324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift */,
+				023D5A972324C27F00CB731A /* Constants.swift */,
 			);
 			path = TingDong;
 			sourceTree = "<group>";
@@ -168,7 +174,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				023D5A982324C27F00CB731A /* Constants.swift in Sources */,
 				023D7BC722F2AA0C00825524 /* Model.swift in Sources */,
+				023D5A962324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift in Sources */,
 				023EE69A22D3175C0035592B /* MainController.swift in Sources */,
 				023EE69822D3175C0035592B /* AppDelegate.swift in Sources */,
 			);

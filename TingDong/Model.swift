@@ -54,4 +54,13 @@ public class TouchedOrNot {
         self.touched = ""
         self.untouched = (2...StateCount.max).reduce("1") { numStr, num in "\(numStr)|\(num)" }
     }
+    
+    var randomFWordId: Int {
+        guard untouched != "" else {
+            fatalError("trying to get a random F state word while no more untouched words?!")
+        }
+        let untouchedList = untouched.split(separator: "|")
+        let ran = Int.random(in: 0..<untouchedList.count)
+        return Int(untouchedList[ran])!
+    }
 }
