@@ -11,6 +11,7 @@ class MainController: UIViewController {
 
     var nextWord: Word!
     var nextThreeOtherWordTrans: [String]!
+    var correctAnswerIndex = 0
 
     // UI outlets
     @IBOutlet weak var wordEnText: UILabel!
@@ -45,11 +46,15 @@ class MainController: UIViewController {
                 self.nextWord = word
                 self.readNextThreeOtherWordDefs {
                     DispatchQueue.main.async {
+                        // randomize answers
+                        self.correctAnswerIndex = Int.random(in: 0..<4)
+                        var trans = self.nextThreeOtherWordTrans!
+                        trans.insert(self.nextWord!.translation, at: self.correctAnswerIndex)
                         self.wordEnText.text = self.nextWord!.word
-                        self.transLabel1.text = self.nextWord!.translation
-                        self.transLabel2.text = self.nextThreeOtherWordTrans[0]
-                        self.transLabel3.text = self.nextThreeOtherWordTrans[1]
-                        self.transLabel4.text = self.nextThreeOtherWordTrans[2]
+                        self.transLabel1.text = trans[0]
+                        self.transLabel2.text = trans[1]
+                        self.transLabel3.text = trans[2]
+                        self.transLabel4.text = trans[3]
                     }
                 }
             }
