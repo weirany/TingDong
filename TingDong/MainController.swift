@@ -9,7 +9,6 @@ class MainController: UIViewController {
     var stateCount: StateCount!
     var touchedOrNot: TouchedOrNot!
 
-    var nextAToEWordIdFromCloud: Int!
     var nextWord: Word!
     var nextThreeOtherWordTrans: [String]!
 
@@ -97,9 +96,9 @@ class MainController: UIViewController {
             }
         }
         else {
-            readNextAToEFromCloud(anyAToEWord: false) {
-                if let nextAToEWordId = self.nextAToEWordIdFromCloud {
-                    self.readWordFromCloud(wordId: nextAToEWordId) { (word) in
+            readNextAToEFromCloud(anyAToEWord: false) { (wordId) in
+                if let wordId = wordId {
+                    self.readWordFromCloud(wordId: wordId) { (word) in
                         completion(word)
                     }
                 }
@@ -110,14 +109,14 @@ class MainController: UIViewController {
                         }
                     }
                     else {
-                        self.readNextAToEFromCloud(anyAToEWord: true) {
-                            if let nextAToEWordId = self.nextAToEWordIdFromCloud {
-                                self.readWordFromCloud(wordId: nextAToEWordId) { (word) in
+                        self.readNextAToEFromCloud(anyAToEWord: true) { (wordId) in
+                            if let wordId = wordId {
+                                self.readWordFromCloud(wordId: wordId) { (word) in
                                     completion(word)
                                 }
                             }
                             else {
-                                fatalError("no more untouched words, but failed to read any word from A to E!")
+                                fatalError("no more untouched words, but failed to read any word id from A to E!")
                             }
                         }
                     }
@@ -126,7 +125,7 @@ class MainController: UIViewController {
         }
     }
     
-    func readNextAToEFromCloud(anyAToEWord: Bool, completion: @escaping () -> Void) {
+    func readNextAToEFromCloud(anyAToEWord: Bool, completion: @escaping (_ wordId: Int?) -> Void) {
         //    - How frequently each category got picked
         //    ○ D: 1| 0
         //    ○ C: 2 | 1, 2
@@ -145,7 +144,6 @@ class MainController: UIViewController {
             fatalError("Got a random number outside of [0,15]")
         }
         
-        nextAToEWordIdFromCloud = nil
         // logic: the earliest from a given state, but it has to be dued.
         let pred = anyAToEWord ? NSPredicate(value: true) : NSPredicate(format: "(state == %d) AND (dueAt < %@)", stateToPickNext, NSDate())
         let query = CKQuery(recordType: "AEWord", predicate: pred)
@@ -154,13 +152,13 @@ class MainController: UIViewController {
         query.sortDescriptors = [sort]
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            self.nextAToEWordIdFromCloud = (record["wordId"] as! Int)
+            completion(record["wordId"] as? Int)
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            completion()
+            completion(nil)
         }
         privateDB.add(queryOp)
     }
