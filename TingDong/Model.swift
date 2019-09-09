@@ -63,4 +63,27 @@ public class TouchedOrNot {
         let ran = Int.random(in: 0..<untouchedList.count)
         return Int(untouchedList[ran])!
     }
+    
+    // return 3 random distinct wordIds from touched word list, not including the given wordId.
+    // if touched list length < 4, then get all 3 from untouched.
+    func otherThreeWordIds(excludeWordId: Int) -> [Int] {
+        var result: [Int] = []
+        var list = touched.split(separator: "|")
+
+        if list.count < 4 {
+            list = untouched.split(separator: "|")
+        }
+        
+        while list.count < 3 {
+            let ran = Int.random(in: 0..<list.count)
+            let temp = Int(String(list[ran]))!
+            if temp == excludeWordId || result.contains(temp){
+                continue
+            }
+            else {
+                result.append(temp)
+            }
+        }
+        return result
+    }
 }

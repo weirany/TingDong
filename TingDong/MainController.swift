@@ -10,8 +10,13 @@ class MainController: UIViewController {
     var touchedOrNot: TouchedOrNot!
 
     var nextAToEWordIdFromCloud: Int!
+    var wordJustReadFromCloud: Word!
     var nextWord: Word!
+    var nextThreeOtherWordTrans: [String]!
 
+    // UI outlets
+    @IBOutlet weak var wordEnText: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -33,15 +38,40 @@ class MainController: UIViewController {
             }
         }
         
-        initAllLocalVarsFromCloud { () in
-            // todo: start logic
+        initAllLocalVarsFromCloud {
+            self.readNextWord {
+                self.nextWord = self.wordJustReadFromCloud
+                DispatchQueue.main.async {
+                    self.wordEnText.text = self.nextWord!.word
+                }
+            }
         }
     }
     
     func initAllLocalVarsFromCloud(completion: @escaping () -> Void) {
-        readLatestStateCountFromCloud { () in
-            self.readTouchedOrNotFromCloud { () in
+        readLatestStateCountFromCloud {
+            self.readTouchedOrNotFromCloud {
                 completion()
+            }
+        }
+    }
+    
+    func readNextThreeOtherWordDefs(completion: @escaping () -> Void) {
+        guard nextWord != nil else {
+            fatalError("trying to read other 3 words while nextWord is nil?!")
+        }
+        
+        // reset first
+        nextThreeOtherWordTrans = []
+        
+        let threeIds = touchedOrNot.otherThreeWordIds(excludeWordId: nextWord.wordId)
+        readWordFromCloud(wordId: threeIds[0]) { () in
+            self.nextThreeOtherWordTrans.append(self.wordJustReadFromCloud.translation)
+            self.readWordFromCloud(wordId: threeIds[1]) { () in
+                self.nextThreeOtherWordTrans.append(self.wordJustReadFromCloud.translation)
+                self.readWordFromCloud(wordId: threeIds[2]) { () in
+                    self.nextThreeOtherWordTrans.append(self.wordJustReadFromCloud.translation)
+                }
             }
         }
     }
@@ -52,24 +82,28 @@ class MainController: UIViewController {
         
         // if Cx4 > Sum(touched) and F is not empty: get from F.
         if (self.stateCount.c * 4 > self.stateCount.sum && (self.stateCount.sum < StateCount.max)) {
-            self.readWordFromCloud(wordId: touchedOrNot.randomFWordId) { () in
+            self.readWordFromCloud(wordId: touchedOrNot.randomFWordId) {
+                completion()
             }
         }
         else {
-            readNextAToEFromCloud(anyAToEWord: false) { () in
+            readNextAToEFromCloud(anyAToEWord: false) {
                 if let nextAToEWordId = self.nextAToEWordIdFromCloud {
-                    self.readWordFromCloud(wordId: nextAToEWordId) { () in
+                    self.readWordFromCloud(wordId: nextAToEWordId) {
+                        completion()
                     }
                 }
                 else {
                     if self.stateCount.sum < StateCount.max {
-                        self.readWordFromCloud(wordId: self.touchedOrNot.randomFWordId) { () in
+                        self.readWordFromCloud(wordId: self.touchedOrNot.randomFWordId) {
+                            completion()
                         }
                     }
                     else {
-                        self.readNextAToEFromCloud(anyAToEWord: true) { () in
+                        self.readNextAToEFromCloud(anyAToEWord: true) {
                             if let nextAToEWordId = self.nextAToEWordIdFromCloud {
-                                self.readWordFromCloud(wordId: nextAToEWordId) { () in
+                                self.readWordFromCloud(wordId: nextAToEWordId) {
+                                    completion()
                                 }
                             }
                             else {
@@ -122,18 +156,21 @@ class MainController: UIViewController {
     }
     
     func readWordFromCloud(wordId: Int, completion: @escaping () -> Void) {
+        // reset first
+        wordJustReadFromCloud = nil
+        
         let pred = NSPredicate(format: "wordId == %d", wordId)
         let query = CKQuery(recordType: "Word", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            self.nextWord = Word(record: record)
+            self.wordJustReadFromCloud = Word(record: record)
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            if self.nextWord == nil {
+            if self.wordJustReadFromCloud == nil {
                 fatalError("failed to read wordId:\(wordId) from cloud!")
             }
             completion()
@@ -163,7 +200,7 @@ class MainController: UIViewController {
         }
         else {
             self.touchedOrNot = TouchedOrNot()
-            self.writeTouchedOrNot { () in
+            self.writeTouchedOrNot {
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized)
                 self.privateDB.add(queryOp)
             }
@@ -206,7 +243,7 @@ class MainController: UIViewController {
         }
         else {
             self.stateCount = StateCount()
-            self.writeLatestStateCount { () in
+            self.writeLatestStateCount {
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
                 self.privateDB.add(queryOp)
             }
