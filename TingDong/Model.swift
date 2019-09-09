@@ -74,7 +74,7 @@ public class TouchedOrNot {
             list = untouched.split(separator: "|")
         }
         
-        while list.count < 3 {
+        while result.count < 3 {
             let ran = Int.random(in: 0..<list.count)
             let temp = Int(String(list[ran]))!
             if temp == excludeWordId || result.contains(temp){

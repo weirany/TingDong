@@ -24,16 +24,56 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="I89-iy-gaJ">
+                                <rect key="frame" x="20" y="112" width="374" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3wB-aU-PgV">
+                                <rect key="frame" x="20" y="149" width="374" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sSv-H7-et8">
+                                <rect key="frame" x="20" y="186" width="374" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="axL-Ws-8gC">
+                                <rect key="frame" x="20" y="223" width="374" height="29"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="24"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="sSv-H7-et8" firstAttribute="top" secondItem="3wB-aU-PgV" secondAttribute="bottom" constant="8" id="1kM-aW-K4H"/>
+                            <constraint firstItem="3wB-aU-PgV" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="79w-vu-rmz"/>
+                            <constraint firstItem="I89-iy-gaJ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="AqC-FG-J7E"/>
                             <constraint firstItem="CVN-12-bnz" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="B0e-qz-XRo"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="axL-Ws-8gC" secondAttribute="trailing" constant="20" id="HKR-zw-wVc"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="3wB-aU-PgV" secondAttribute="trailing" constant="20" id="Lcu-kk-J8X"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="sSv-H7-et8" secondAttribute="trailing" constant="20" id="P2D-eV-glB"/>
+                            <constraint firstItem="I89-iy-gaJ" firstAttribute="top" secondItem="CVN-12-bnz" secondAttribute="bottom" constant="8" id="QSn-CB-kZK"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="CVN-12-bnz" secondAttribute="trailing" constant="20" id="d0n-JC-mFo"/>
                             <constraint firstItem="CVN-12-bnz" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="fwR-St-0Zv"/>
+                            <constraint firstItem="sSv-H7-et8" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="gnT-aT-aC9"/>
+                            <constraint firstItem="axL-Ws-8gC" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="20" id="qsx-qO-0pb"/>
+                            <constraint firstItem="3wB-aU-PgV" firstAttribute="top" secondItem="I89-iy-gaJ" secondAttribute="bottom" constant="8" id="sw4-yE-MOJ"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="I89-iy-gaJ" secondAttribute="trailing" constant="20" id="u3a-RP-D4V"/>
+                            <constraint firstItem="axL-Ws-8gC" firstAttribute="top" secondItem="sSv-H7-et8" secondAttribute="bottom" constant="8" id="xFG-f6-Ixk"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
                     <connections>
+                        <outlet property="transLabel1" destination="I89-iy-gaJ" id="kN5-i6-rtO"/>
+                        <outlet property="transLabel2" destination="3wB-aU-PgV" id="Kwh-rY-OY1"/>
+                        <outlet property="transLabel3" destination="sSv-H7-et8" id="lm4-pD-bkx"/>
+                        <outlet property="transLabel4" destination="axL-Ws-8gC" id="3YY-1i-v8u"/>
                         <outlet property="wordEnText" destination="CVN-12-bnz" id="yGI-jB-UzS"/>
                     </connections>
                 </viewController>

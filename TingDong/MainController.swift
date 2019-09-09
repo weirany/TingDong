@@ -16,6 +16,10 @@ class MainController: UIViewController {
 
     // UI outlets
     @IBOutlet weak var wordEnText: UILabel!
+    @IBOutlet weak var transLabel1: UILabel!
+    @IBOutlet weak var transLabel2: UILabel!
+    @IBOutlet weak var transLabel3: UILabel!
+    @IBOutlet weak var transLabel4: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,8 +45,14 @@ class MainController: UIViewController {
         initAllLocalVarsFromCloud {
             self.readNextWord {
                 self.nextWord = self.wordJustReadFromCloud
-                DispatchQueue.main.async {
-                    self.wordEnText.text = self.nextWord!.word
+                self.readNextThreeOtherWordDefs {
+                    DispatchQueue.main.async {
+                        self.wordEnText.text = self.nextWord!.word
+                        self.transLabel1.text = self.nextWord!.translation
+                        self.transLabel2.text = self.nextThreeOtherWordTrans[0]
+                        self.transLabel3.text = self.nextThreeOtherWordTrans[1]
+                        self.transLabel4.text = self.nextThreeOtherWordTrans[2]
+                    }
                 }
             }
         }
@@ -71,6 +81,7 @@ class MainController: UIViewController {
                 self.nextThreeOtherWordTrans.append(self.wordJustReadFromCloud.translation)
                 self.readWordFromCloud(wordId: threeIds[2]) { () in
                     self.nextThreeOtherWordTrans.append(self.wordJustReadFromCloud.translation)
+                    completion()
                 }
             }
         }
