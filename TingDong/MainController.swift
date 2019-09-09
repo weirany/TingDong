@@ -86,9 +86,6 @@ class MainController: UIViewController {
     }
     
     func readNextWord(completion: @escaping (_ word: Word) -> Void) {
-        // reset first
-        nextWord = nil
-        
         // if Cx4 > Sum(touched) and F is not empty: get from F.
         if (self.stateCount.c * 4 > self.stateCount.sum && (self.stateCount.sum < StateCount.max)) {
             self.readWordFromCloud(wordId: touchedOrNot.randomFWordId) { (word) in
