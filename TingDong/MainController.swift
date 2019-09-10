@@ -64,11 +64,23 @@ class MainController: UIViewController {
         }
     }
     
-    func handleAnswer() {
-        // update touchOrNot
+    func handleAnswer(hasCorrectAnswer: Bool, completion: @escaping () -> Void) {
+        // update touchOrNot (local then cloud)
         touchedOrNot.update(aeword: nextAEWord)
         if nextAEWord.state == -1 {
-            writeTouchedOrNotToCloud {}
+            writeTouchedOrNotToCloud { () in
+                // update state count (local then cloud)
+                let newState = self.stateCount.update(currentState: self.nextAEWord.state, hasCorrectAnswer: hasCorrectAnswer)
+                self.writeLatestStateCountToCloud { () in
+                    // update AEWord (cloud only)
+                    self.writeLatestAEWordToCloud(newState: newState) { () in
+                        // update history (cloud only)
+                        self.writeLatestHistoryToCloud(toState: newState) { () in
+                            completion()
+                        }
+                    }
+                }
+            }
         }
     }
     
@@ -279,6 +291,33 @@ class MainController: UIViewController {
         record.setValue(self.stateCount.d, forKey: "d")
         record.setValue(self.stateCount.e, forKey: "e")
         privateDB.save(record) { (rec, error) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            completion()
+        }
+    }
+    
+    func writeLatestAEWordToCloud(newState: Int, completion: @escaping () -> Void) {
+        let record = nextAEWord.record ?? CKRecord(recordType: "AEWord")
+        record.setValue(nextAEWord.newDueAt, forKey: "dueAt")
+        record.setValue(nextAEWord.enqueueAt, forKey: "enqueueAt")
+        record.setValue(newState, forKey: "state")
+        record.setValue(nextAEWord.wordId, forKey: "wordId")
+        privateDB.save(record) { (rec, error) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            completion()
+        }
+    }
+    
+    func writeLatestHistoryToCloud(toState: Int, completion: @escaping () -> Void) {
+        let record = CKRecord(recordType: "History")
+        record.setValue(nextAEWord.state, forKey: "fromState")
+        record.setValue(toState, forKey: "toState")
+        record.setValue(nextAEWord.wordId, forKey: "wordId")
+        publicDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }

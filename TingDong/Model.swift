@@ -7,11 +7,11 @@ import CloudKit
 //○ D: Incorrect/Incorrect: not ready to learn
 //○ E: incorrect/? Or correct/? (1 attempt only): learning (刚学)
 public class StateCount {
-    let a: Int
-    let b: Int
-    let c: Int
-    let d: Int
-    let e: Int
+    var a: Int
+    var b: Int
+    var c: Int
+    var d: Int
+    var e: Int
     
     init(record: CKRecord) {
         self.a = record["a"] as! Int
@@ -32,6 +32,67 @@ public class StateCount {
     var sum: Int { return a + b + c + d + e }
     
     class var max: Int { return 42231 }
+    
+    // return new state
+    func update(currentState: Int, hasCorrectAnswer: Bool) -> Int {
+        switch currentState {
+        case -1:    // F
+            e += 1
+            return 4
+        case 0:     // A
+            a -= 1
+            if hasCorrectAnswer {
+                c += 1
+                return 2
+            }
+            else {
+                b += 1
+                return 1
+            }
+        case 1:     // B
+            b -= 1
+            if hasCorrectAnswer {
+                a += 1
+                return 0
+            }
+            else {
+                d += 1
+                return 3
+            }
+        case 2:     // C
+            c -= 1
+            if hasCorrectAnswer {
+                c += 1
+                return 2
+            }
+            else {
+                b += 1
+                return 1
+            }
+        case 3:     // D
+            d -= 1
+            if hasCorrectAnswer {
+                a += 1
+                return 0
+            }
+            else {
+                d += 1
+                return 3
+            }
+        case 4:     // E
+            e -= 1
+            if hasCorrectAnswer {
+                a += 1
+                return 0
+            }
+            else {
+                d += 1
+                return 3
+            }
+        default:
+            fatalError("unknow state?! \(currentState)")
+        }
+    }
 }
 
 public class AEWord {
@@ -39,11 +100,13 @@ public class AEWord {
     let enqueueAt: Date
     let state: Int
     let wordId: Int
+    let record: CKRecord?
     
-    init(dueAt: Date? = nil, enqueueAt: Date? = nil, state: Int? = nil, wordId: Int) {
+    init(dueAt: Date? = nil, enqueueAt: Date? = nil, state: Int? = nil, record: CKRecord? = nil, wordId: Int) {
         self.dueAt = dueAt ?? Util.calculateDueAt(enqueueAt: Date())
         self.enqueueAt = enqueueAt ?? Date()
         self.state = state ?? -1
+        self.record = record
         self.wordId = wordId
     }
     
@@ -51,7 +114,12 @@ public class AEWord {
         self.dueAt = record["dueAt"] as! Date
         self.enqueueAt = record["enqueueAt"] as! Date
         self.state = record["state"] as! Int
+        self.record = record
         self.wordId = record["wordId"] as! Int
+    }
+    
+    var newDueAt: Date {
+        return Util.calculateDueAt(enqueueAt: self.enqueueAt)
     }
 }
 
