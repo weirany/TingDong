@@ -42,41 +42,40 @@ public class Word {
 }
 
 public class TouchedOrNot {
-    let touched: String
-    let untouched: String
+    var touchedStr: String
+    var untouchedStr: String
+    var touched: [Int]
+    var untouched: [Int]
     
     init(record: CKRecord) {
-        self.touched = record["touched"] as! String
-        self.untouched = record["untouched"] as! String
+        self.touchedStr = record["touched"] as! String
+        self.untouchedStr = record["untouched"] as! String
+        self.touched = Util.stringToIntArray(str: touchedStr)
+        self.untouched = Util.stringToIntArray(str: untouchedStr)
     }
     
     init() {
-        self.touched = ""
-        self.untouched = (2...StateCount.max).reduce("1") { numStr, num in "\(numStr)|\(num)" }
+        self.touchedStr = ""
+        self.untouchedStr = (2...StateCount.max).reduce("1") { numStr, num in "\(numStr)|\(num)" }
+        self.touched = Util.stringToIntArray(str: touchedStr)
+        self.untouched = Util.stringToIntArray(str: untouchedStr)
     }
     
     var randomFWordId: Int {
-        guard untouched != "" else {
+        guard untouched.count > 0 else {
             fatalError("trying to get a random F state word while no more untouched words?!")
         }
-        let untouchedList = untouched.split(separator: "|")
-        let ran = Int.random(in: 0..<untouchedList.count)
-        return Int(untouchedList[ran])!
+        return untouched[Int.random(in: 0..<untouched.count)]
     }
     
     // return 3 random distinct wordIds from touched word list, not including the given wordId.
     // if touched list length < 4, then get all 3 from untouched.
-    func otherThreeWordIds(excludeWordId: Int) -> [Int] {
+    func otherThreeRandomWordIds(excludeWordId: Int) -> [Int] {
         var result: [Int] = []
-        var list = touched.split(separator: "|")
-
-        if list.count < 4 {
-            list = untouched.split(separator: "|")
-        }
+        var list = touched.count < 4 ? untouched : touched
         
         while result.count < 3 {
-            let ran = Int.random(in: 0..<list.count)
-            let temp = Int(String(list[ran]))!
+            let temp = list[Int.random(in: 0..<list.count)]
             if temp == excludeWordId || result.contains(temp){
                 continue
             }

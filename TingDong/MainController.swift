@@ -6,6 +6,7 @@ class MainController: UIViewController {
     var publicDB: CKDatabase!
     var privateDB: CKDatabase!
 
+    // local
     var stateCount: StateCount!
     var touchedOrNot: TouchedOrNot!
 
@@ -61,6 +62,10 @@ class MainController: UIViewController {
         }
     }
     
+    func handleAnswer() {
+        
+    }
+    
     func initAllLocalVarsFromCloud(completion: @escaping () -> Void) {
         readLatestStateCountFromCloud {
             self.readTouchedOrNotFromCloud {
@@ -77,7 +82,7 @@ class MainController: UIViewController {
         // reset first
         nextThreeOtherWordTrans = []
         
-        let threeIds = touchedOrNot.otherThreeWordIds(excludeWordId: nextWord.wordId)
+        let threeIds = touchedOrNot.otherThreeRandomWordIds(excludeWordId: nextWord.wordId)
         readWordFromCloud(wordId: threeIds[0]) { (word) in
             self.nextThreeOtherWordTrans.append(word.translation)
             self.readWordFromCloud(wordId: threeIds[1]) { (word) in
@@ -217,8 +222,8 @@ class MainController: UIViewController {
     
     func writeTouchedOrNot(completion: @escaping () -> Void) {
         let record = CKRecord(recordType: "TouchedOrNot")
-        record.setValue(self.touchedOrNot.touched, forKey: "touched")
-        record.setValue(self.touchedOrNot.untouched, forKey: "untouched")
+        record.setValue(self.touchedOrNot.touchedStr, forKey: "touched")
+        record.setValue(self.touchedOrNot.untouchedStr, forKey: "untouched")
         privateDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
