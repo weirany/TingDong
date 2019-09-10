@@ -1,6 +1,11 @@
 import Foundation
 import CloudKit
 
+//○ A: Incorrect/Correct: learned (学会)
+//○ B: Correct/Incorrect: forgot
+//○ C: Correct/Correct: mastered (牢记)
+//○ D: Incorrect/Incorrect: not ready to learn
+//○ E: incorrect/? Or correct/? (1 attempt only): learning (刚学)
 public class StateCount {
     let a: Int
     let b: Int
@@ -28,7 +33,28 @@ public class StateCount {
     
     class var max: Int { return 42231 }
 }
-	
+
+public class AEWord {
+    let dueAt: Date
+    let enqueueAt: Date
+    let state: Int
+    let wordId: Int
+    
+    init(dueAt: Date? = nil, enqueueAt: Date? = nil, state: Int? = nil, wordId: Int) {
+        self.dueAt = dueAt ?? Util.calculateDueAt(enqueueAt: Date())
+        self.enqueueAt = enqueueAt ?? Date()
+        self.state = state ?? -1
+        self.wordId = wordId
+    }
+    
+    init(record: CKRecord) {
+        self.dueAt = record["dueAt"] as! Date
+        self.enqueueAt = record["enqueueAt"] as! Date
+        self.state = record["state"] as! Int
+        self.wordId = record["wordId"] as! Int
+    }
+}
+
 public class Word {
     let wordId: Int
     let word: String
@@ -84,5 +110,15 @@ public class TouchedOrNot {
             }
         }
         return result
+    }
+    
+    // if state is -1 (F state), means it's a new word
+    func update(aeword: AEWord) {
+        if aeword.state == -1 {
+            touched.append(aeword.wordId)
+            untouched.removeFirst(aeword.wordId)
+            touchedStr = Util.intArrayToString(arr: touched)
+            untouchedStr = Util.intArrayToString(arr: untouched)
+        }
     }
 }

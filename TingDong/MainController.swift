@@ -11,6 +11,7 @@ class MainController: UIViewController {
     var touchedOrNot: TouchedOrNot!
 
     var nextWord: Word!
+    var nextAEWord: AEWord!
     var nextThreeOtherWordTrans: [String]!
     var correctAnswerIndex = 0
 
@@ -43,8 +44,9 @@ class MainController: UIViewController {
         }
         
         initAllLocalVarsFromCloud {
-            self.readNextWord { (word) in
+            self.readNextWord { (word, aeword) in
                 self.nextWord = word
+                self.nextAEWord = aeword
                 self.readNextThreeOtherWordDefs {
                     DispatchQueue.main.async {
                         // randomize answers
@@ -63,7 +65,11 @@ class MainController: UIViewController {
     }
     
     func handleAnswer() {
-        
+        // update touchOrNot
+        touchedOrNot.update(aeword: nextAEWord)
+        if nextAEWord.state == -1 {
+            writeTouchedOrNotToCloud {}
+        }
     }
     
     func initAllLocalVarsFromCloud(completion: @escaping () -> Void) {
@@ -95,31 +101,33 @@ class MainController: UIViewController {
         }
     }
     
-    func readNextWord(completion: @escaping (_ word: Word) -> Void) {
+    func readNextWord(completion: @escaping (_ word: Word, _ aeword: AEWord) -> Void) {
         // if Cx4 > Sum(touched) and F is not empty: get from F.
         if (self.stateCount.c * 4 > self.stateCount.sum && (self.stateCount.sum < StateCount.max)) {
-            self.readWordFromCloud(wordId: touchedOrNot.randomFWordId) { (word) in
-                completion(word)
+            let fWordId = touchedOrNot.randomFWordId
+            self.readWordFromCloud(wordId: fWordId) { (word) in
+                completion(word, AEWord(wordId: fWordId))
             }
         }
         else {
-            readNextAToEFromCloud(anyAToEWord: false) { (wordId) in
-                if let wordId = wordId {
-                    self.readWordFromCloud(wordId: wordId) { (word) in
-                        completion(word)
+            readNextAToEFromCloud(anyAToEWord: false) { (aeword) in
+                if let aeword = aeword {
+                    self.readWordFromCloud(wordId: aeword.wordId) { (word) in
+                        completion(word, aeword)
                     }
                 }
                 else {
                     if self.stateCount.sum < StateCount.max {
-                        self.readWordFromCloud(wordId: self.touchedOrNot.randomFWordId) { (word) in
-                            completion(word)
+                        let fWordId = self.touchedOrNot.randomFWordId
+                        self.readWordFromCloud(wordId: fWordId) { (word) in
+                            completion(word, AEWord(wordId: fWordId))
                         }
                     }
                     else {
-                        self.readNextAToEFromCloud(anyAToEWord: true) { (wordId) in
-                            if let wordId = wordId {
-                                self.readWordFromCloud(wordId: wordId) { (word) in
-                                    completion(word)
+                        self.readNextAToEFromCloud(anyAToEWord: true) { (aeword) in
+                            if let aeword = aeword {
+                                self.readWordFromCloud(wordId: aeword.wordId) { (word) in
+                                    completion(word, aeword)
                                 }
                             }
                             else {
@@ -132,7 +140,7 @@ class MainController: UIViewController {
         }
     }
     
-    func readNextAToEFromCloud(anyAToEWord: Bool, completion: @escaping (_ wordId: Int?) -> Void) {
+    func readNextAToEFromCloud(anyAToEWord: Bool, completion: @escaping (_ aeword: AEWord?) -> Void) {
         //    - How frequently each category got picked
         //    ○ D: 1| 0
         //    ○ C: 2 | 1, 2
@@ -159,7 +167,7 @@ class MainController: UIViewController {
         query.sortDescriptors = [sort]
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            completion(record["wordId"] as? Int)
+            completion(AEWord(record: record))
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
@@ -213,14 +221,14 @@ class MainController: UIViewController {
         }
         else {
             self.touchedOrNot = TouchedOrNot()
-            self.writeTouchedOrNot {
+            self.writeTouchedOrNotToCloud {
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized)
                 self.privateDB.add(queryOp)
             }
         }
     }
     
-    func writeTouchedOrNot(completion: @escaping () -> Void) {
+    func writeTouchedOrNotToCloud(completion: @escaping () -> Void) {
         let record = CKRecord(recordType: "TouchedOrNot")
         record.setValue(self.touchedOrNot.touchedStr, forKey: "touched")
         record.setValue(self.touchedOrNot.untouchedStr, forKey: "untouched")
@@ -256,14 +264,14 @@ class MainController: UIViewController {
         }
         else {
             self.stateCount = StateCount()
-            self.writeLatestStateCount {
+            self.writeLatestStateCountToCloud {
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
                 self.privateDB.add(queryOp)
             }
         }
     }
     
-    func writeLatestStateCount(completion: @escaping () -> Void) {
+    func writeLatestStateCountToCloud(completion: @escaping () -> Void) {
         let record = CKRecord(recordType: "StateCount")
         record.setValue(self.stateCount.a, forKey: "a")
         record.setValue(self.stateCount.b, forKey: "b")
