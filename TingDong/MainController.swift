@@ -14,16 +14,30 @@ class MainController: UIViewController {
     var nextAEWord: AEWord!
     var nextThreeOtherWordTrans: [String]!
     var correctAnswerIndex = 0
+    var answered = false
 
     // UI outlets
-    @IBOutlet weak var wordEnText: UILabel!
     @IBOutlet weak var transLabel1: UILabel!
     @IBOutlet weak var transLabel2: UILabel!
     @IBOutlet weak var transLabel3: UILabel!
     @IBOutlet weak var transLabel4: UILabel!
+    @IBOutlet weak var nextButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // initialize ui
+        resetUIGetReadyForNextWord()
+        
+        // events
+        var tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        transLabel1.addGestureRecognizer(tap)
+        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        transLabel2.addGestureRecognizer(tap)
+        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        transLabel3.addGestureRecognizer(tap)
+        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        transLabel4.addGestureRecognizer(tap)
 
         let container = CKContainer.default()
         publicDB = container.publicCloudDatabase
@@ -44,21 +58,26 @@ class MainController: UIViewController {
         }
         
         initAllLocalVarsFromCloud {
-            self.readNextWord { (word, aeword) in
-                self.nextWord = word
-                self.nextAEWord = aeword
-                self.readNextThreeOtherWordDefs {
-                    DispatchQueue.main.async {
-                        // randomize answers
-                        self.correctAnswerIndex = Int.random(in: 0..<4)
-                        var trans = self.nextThreeOtherWordTrans!
-                        trans.insert(self.nextWord!.translation, at: self.correctAnswerIndex)
-                        self.wordEnText.text = self.nextWord!.word
-                        self.transLabel1.text = trans[0]
-                        self.transLabel2.text = trans[1]
-                        self.transLabel3.text = trans[2]
-                        self.transLabel4.text = trans[3]
-                    }
+            self.transitionToNextWord()
+        }
+    }
+    
+    func transitionToNextWord() {
+        self.readNextWord { (word, aeword) in
+            self.nextWord = word
+            self.nextAEWord = aeword
+            self.readNextThreeOtherWordDefs {
+                DispatchQueue.main.async {
+                    // randomize answers
+                    self.correctAnswerIndex = Int.random(in: 0..<4)
+                    var trans = self.nextThreeOtherWordTrans!
+                    trans.insert(self.nextWord!.translation, at: self.correctAnswerIndex)
+                    self.transLabel1.text = trans[0]
+                    self.transLabel2.text = trans[1]
+                    self.transLabel3.text = trans[2]
+                    self.transLabel4.text = trans[3]
+                    // ready to answer
+                    self.answered = false
                 }
             }
         }
@@ -323,5 +342,43 @@ class MainController: UIViewController {
             }
             completion()
         }
+    }
+    
+    @objc
+    func answerTapped(sender:UITapGestureRecognizer) {
+        // ignore tap if it's already answered
+        if answered { return }
+        
+        answered = true
+        var tappedIndex = sender.view?.tag
+        let animation = {
+            self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
+            self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
+            self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
+            self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
+        }
+        UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
+                       animations: animation ) { (finished: Bool) in
+            self.nextButton.isEnabled = true
+        }
+    }
+    
+    @IBAction func nextTapped(_ sender: Any) {
+        resetUIGetReadyForNextWord()
+        transitionToNextWord()
+    }
+    
+    func resetUIGetReadyForNextWord() {
+        nextButton.isEnabled = false
+        
+        transLabel1.text = ""
+        transLabel2.text = ""
+        transLabel3.text = ""
+        transLabel4.text = ""
+        
+        transLabel1.alpha = 1
+        transLabel2.alpha = 1
+        transLabel3.alpha = 1
+        transLabel4.alpha = 1
     }
 }

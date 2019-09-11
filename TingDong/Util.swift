@@ -13,7 +13,7 @@ class Util {
     static func calculateDueAt(enqueueAt: Date) -> Date {
         let calendar = Calendar.current
         let secSinceEnqueue = calendar.dateComponents([.second], from: enqueueAt, to: Date()).second!
-        let secToAdd = 60 * 2 + Int.random(in: 0..<secSinceEnqueue)
+        let secToAdd = 60 * 2 + Int.random(in: 0...secSinceEnqueue)
         return calendar.date(byAdding: .second, value: secToAdd, to: Date())!
     }
 }
