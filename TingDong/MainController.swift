@@ -7,7 +7,9 @@ class MainController: UIViewController {
     var privateDB: CKDatabase!
 
     // local
-    var stateCount: StateCount!
+    var latestStateCount: StateCount!
+    var tenDayAgoStateCount: StateCount!
+    var hundredDayAgoStateCount: StateCount!
     var touchedOrNot: TouchedOrNot!
 
     var nextWord: Word!
@@ -88,7 +90,7 @@ class MainController: UIViewController {
         if nextAEWord.state == -1 {
             writeTouchedOrNotToCloud { () in
                 // update state count (local then cloud)
-                let newState = self.stateCount.update(currentState: self.nextAEWord.state, hasCorrectAnswer: hasCorrectAnswer)
+                let newState = self.latestStateCount.update(currentState: self.nextAEWord.state, hasCorrectAnswer: hasCorrectAnswer)
                 self.writeLatestStateCountToCloud { () in
                     // update AEWord (cloud only)
                     self.writeLatestAEWordToCloud(newState: newState) { () in
@@ -103,9 +105,33 @@ class MainController: UIViewController {
     }
     
     func initAllLocalVarsFromCloud(completion: @escaping () -> Void) {
-        readLatestStateCountFromCloud {
-            self.readTouchedOrNotFromCloud {
-                completion()
+        readStateCountFromCloud(0) { (record) in
+            if let record = record {
+                self.latestStateCount = StateCount(record: record)
+                self.readStateCountFromCloud(10) { (record) in
+                    if let record = record {
+                        self.tenDayAgoStateCount = StateCount(record: record)
+                    }
+                    else {
+                        self.tenDayAgoStateCount = StateCount()
+                    }
+                    self.readStateCountFromCloud(100) { (record) in
+                        if let record = record {
+                            self.hundredDayAgoStateCount = StateCount(record: record)
+                        }
+                        else {
+                            self.hundredDayAgoStateCount = StateCount()
+                        }
+
+                        self.readTouchedOrNotFromCloud { (result) in
+                            self.touchedOrNot = result
+                            completion()
+                        }
+                    }
+                }
+            }
+            else {
+                fatalError("Got nil while getting latest State Count from cloud")
             }
         }
     }
@@ -133,7 +159,7 @@ class MainController: UIViewController {
     
     func readNextWord(completion: @escaping (_ word: Word, _ aeword: AEWord) -> Void) {
         // if Cx4 > Sum(touched) and F is not empty: get from F.
-        if (self.stateCount.c * 4 > self.stateCount.sum && (self.stateCount.sum < StateCount.max)) {
+        if (self.latestStateCount.c * 4 > self.latestStateCount.sum && (self.latestStateCount.sum < StateCount.max)) {
             let fWordId = touchedOrNot.randomFWordId
             self.readWordFromCloud(wordId: fWordId) { (word) in
                 completion(word, AEWord(wordId: fWordId))
@@ -147,7 +173,7 @@ class MainController: UIViewController {
                     }
                 }
                 else {
-                    if self.stateCount.sum < StateCount.max {
+                    if self.latestStateCount.sum < StateCount.max {
                         let fWordId = self.touchedOrNot.randomFWordId
                         self.readWordFromCloud(wordId: fWordId) { (word) in
                             completion(word, AEWord(wordId: fWordId))
@@ -190,6 +216,7 @@ class MainController: UIViewController {
         }
         
         // logic: the earliest from a given state, but it has to be dued.
+        var result: AEWord? = nil
         let pred = anyAToEWord ? NSPredicate(value: true) : NSPredicate(format: "(state == %d) AND (dueAt < %@)", stateToPickNext, NSDate())
         let query = CKQuery(recordType: "AEWord", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
@@ -197,54 +224,61 @@ class MainController: UIViewController {
         query.sortDescriptors = [sort]
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            completion(AEWord(record: record))
+            result = AEWord(record: record)
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            completion(nil)
+            else {
+                completion(result)
+            }
         }
         privateDB.add(queryOp)
     }
     
     func readWordFromCloud(wordId: Int, completion: @escaping (_ word: Word) -> Void) {
-        var result: Word?
+        var result: Word? = nil
         let pred = NSPredicate(format: "wordId == %d", wordId)
         let query = CKQuery(recordType: "Word", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
             result = Word(record: record)
-            completion(result!)
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            if result == nil {
+            else if let result = result {
+                completion(result)
+            }
+            else {
                 fatalError("failed to read wordId:\(wordId) from cloud!")
             }
         }
         publicDB.add(queryOp)
     }
     
-    func readTouchedOrNotFromCloud(completion: @escaping () -> Void) {
+    func readTouchedOrNotFromCloud(completion: @escaping (_ result: TouchedOrNot) -> Void) {
+        var result: TouchedOrNot? = nil
         let pred = NSPredicate(value: true)
         let query = CKQuery(recordType: "TouchedOrNot", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            self.touchedOrNot = TouchedOrNot(record: record)
+            result = TouchedOrNot(record: record)
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            if self.touchedOrNot == nil {
+            else if let result = result {
+                completion(result)
+            }
+            else {
                 fatalError("Got nil while getting TouchedOrNot from cloud")
             }
-            completion()
         }
         if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized) {
             privateDB.add(queryOp)
@@ -270,30 +304,31 @@ class MainController: UIViewController {
         }
     }
 
-    func readLatestStateCountFromCloud(completion: @escaping () -> Void) {
-        let pred = NSPredicate(value: true)
+    func readStateCountFromCloud(_ numOfDaysAgo: Int, completion: @escaping (_ record: CKRecord?) -> Void) {
+        let queryDate = Calendar.current.date(byAdding: .day, value: -numOfDaysAgo, to: Date())!
+        let pred = numOfDaysAgo == 0 ? NSPredicate(value: true) : NSPredicate(format: "creationDate < %@", queryDate as NSDate)
         let query = CKQuery(recordType: "StateCount", predicate: pred)
         let sort = NSSortDescriptor(key: "creationDate", ascending: false)
         query.sortDescriptors = [sort]
         let queryOp = CKQueryOperation(query: query)
+        var result: CKRecord? = nil
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            self.stateCount = StateCount(record: record)
+            result = record
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            if self.stateCount == nil {
-                fatalError("Got nil while getting State Count from cloud")
+            else {
+                completion(result)
             }
-            completion()
         }
         if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized) {
             privateDB.add(queryOp)
         }
         else {
-            self.stateCount = StateCount()
+            self.latestStateCount = StateCount()
             self.writeLatestStateCountToCloud {
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
                 self.privateDB.add(queryOp)
@@ -303,11 +338,11 @@ class MainController: UIViewController {
     
     func writeLatestStateCountToCloud(completion: @escaping () -> Void) {
         let record = CKRecord(recordType: "StateCount")
-        record.setValue(self.stateCount.a, forKey: "a")
-        record.setValue(self.stateCount.b, forKey: "b")
-        record.setValue(self.stateCount.c, forKey: "c")
-        record.setValue(self.stateCount.d, forKey: "d")
-        record.setValue(self.stateCount.e, forKey: "e")
+        record.setValue(self.latestStateCount.a, forKey: "a")
+        record.setValue(self.latestStateCount.b, forKey: "b")
+        record.setValue(self.latestStateCount.c, forKey: "c")
+        record.setValue(self.latestStateCount.d, forKey: "d")
+        record.setValue(self.latestStateCount.e, forKey: "e")
         privateDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
