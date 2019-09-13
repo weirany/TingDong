@@ -21,7 +21,6 @@ class MainController: UIViewController {
     @IBOutlet weak var transLabel2: UILabel!
     @IBOutlet weak var transLabel3: UILabel!
     @IBOutlet weak var transLabel4: UILabel!
-    @IBOutlet weak var nextButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -346,31 +345,26 @@ class MainController: UIViewController {
     
     @objc
     func answerTapped(sender:UITapGestureRecognizer) {
-        // ignore tap if it's already answered
-        if answered { return }
-        
-        answered = true
-        var tappedIndex = sender.view?.tag
-        let animation = {
-            self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
-            self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
-            self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
-            self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
+        if answered {
+            resetUIGetReadyForNextWord()
+            transitionToNextWord()
         }
-        UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
-                       animations: animation ) { (finished: Bool) in
-            self.nextButton.isEnabled = true
+        else {
+            answered = true
+            var tappedIndex = sender.view?.tag
+            let animation = {
+                self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
+                self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
+                self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
+                self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
+            }
+            UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
+                           animations: animation ) { (finished: Bool) in
+            }
         }
-    }
-    
-    @IBAction func nextTapped(_ sender: Any) {
-        resetUIGetReadyForNextWord()
-        transitionToNextWord()
     }
     
     func resetUIGetReadyForNextWord() {
-        nextButton.isEnabled = false
-        
         transLabel1.text = ""
         transLabel2.text = ""
         transLabel3.text = ""
