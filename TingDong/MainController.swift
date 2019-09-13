@@ -19,6 +19,16 @@ class MainController: UIViewController {
     var answered = false
 
     // UI outlets
+    @IBOutlet weak var master0: UILabel!
+    @IBOutlet weak var learned0: UILabel!
+    @IBOutlet weak var untouched0: UILabel!
+    @IBOutlet weak var master10: UILabel!
+    @IBOutlet weak var learned10: UILabel!
+    @IBOutlet weak var untouched10: UILabel!
+    @IBOutlet weak var master100: UILabel!
+    @IBOutlet weak var learned100: UILabel!
+    @IBOutlet weak var untouched100: UILabel!
+
     @IBOutlet weak var transLabel1: UILabel!
     @IBOutlet weak var transLabel2: UILabel!
     @IBOutlet weak var transLabel3: UILabel!
@@ -63,6 +73,18 @@ class MainController: UIViewController {
         }
     }
     
+    func updateUIStateCounts() {
+        master0.text = String(latestStateCount.c)
+        learned0.text = String(latestStateCount.a)
+        untouched0.text = String(latestStateCount.f)
+        master10.text = String(tenDayAgoStateCount.c)
+        learned10.text = String(tenDayAgoStateCount.a)
+        untouched10.text = String(tenDayAgoStateCount.f)
+        master100.text = String(hundredDayAgoStateCount.c)
+        learned100.text = String(hundredDayAgoStateCount.a)
+        untouched100.text = String(hundredDayAgoStateCount.f)
+    }
+    
     func transitionToNextWord() {
         self.readNextWord { (word, aeword) in
             self.nextWord = word
@@ -89,7 +111,7 @@ class MainController: UIViewController {
         touchedOrNot.update(aeword: nextAEWord)
         if nextAEWord.state == -1 {
             writeTouchedOrNotToCloud { () in
-                // update state count (local then cloud)
+                // update state count (local then cloud), then update UI. 
                 let newState = self.latestStateCount.update(currentState: self.nextAEWord.state, hasCorrectAnswer: hasCorrectAnswer)
                 self.writeLatestStateCountToCloud { () in
                     // update AEWord (cloud only)
@@ -100,6 +122,7 @@ class MainController: UIViewController {
                         }
                     }
                 }
+                self.updateUIStateCounts()
             }
         }
     }
@@ -123,6 +146,9 @@ class MainController: UIViewController {
                             self.hundredDayAgoStateCount = StateCount()
                         }
 
+                        DispatchQueue.main.async {
+                            self.updateUIStateCounts()
+                        }
                         self.readTouchedOrNotFromCloud { (result) in
                             self.touchedOrNot = result
                             completion()

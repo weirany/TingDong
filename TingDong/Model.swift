@@ -29,9 +29,10 @@ public class StateCount {
         self.e = 0
     }
     
-    var sum: Int { return a + b + c + d + e }
-    
     class var max: Int { return 42231 }
+
+    var sum: Int { return a + b + c + d + e }
+    var f: Int { return StateCount.max - sum}
     
     // return new state
     func update(currentState: Int, hasCorrectAnswer: Bool) -> Int {
