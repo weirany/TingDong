@@ -139,29 +139,33 @@
                                     </stackView>
                                 </subviews>
                             </stackView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="0Nz-Q7-nxE">
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="0Nz-Q7-nxE">
                                 <rect key="frame" x="20" y="224" width="374" height="642"/>
                                 <subviews>
                                     <label opaque="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="loading..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="I89-iy-gaJ">
-                                        <rect key="frame" x="0.0" y="0.0" width="374" height="160.5"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="374" height="153"/>
+                                        <color key="backgroundColor" red="0.99595350027084351" green="0.97297579050064087" blue="0.94117122888565063" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" tag="1" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="loading..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="3wB-aU-PgV">
-                                        <rect key="frame" x="0.0" y="160.5" width="374" height="160.5"/>
+                                        <rect key="frame" x="0.0" y="163" width="374" height="153"/>
+                                        <color key="backgroundColor" red="0.99595350027084351" green="0.97297579050064087" blue="0.94117122888565063" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" tag="2" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="loading..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="sSv-H7-et8">
-                                        <rect key="frame" x="0.0" y="321" width="374" height="160.5"/>
+                                        <rect key="frame" x="0.0" y="326" width="374" height="153"/>
+                                        <color key="backgroundColor" red="0.99595350027084351" green="0.97297579050064087" blue="0.94117122888565063" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" tag="3" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="loading..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" minimumFontSize="7" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="axL-Ws-8gC">
-                                        <rect key="frame" x="0.0" y="481.5" width="374" height="160.5"/>
+                                        <rect key="frame" x="0.0" y="489" width="374" height="153"/>
+                                        <color key="backgroundColor" red="0.99595350027084351" green="0.97297579050064087" blue="0.94117122888565063" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
