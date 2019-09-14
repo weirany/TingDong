@@ -12,6 +12,7 @@ public class StateCount {
     var c: Int
     var d: Int
     var e: Int
+    var totalAttempts: Int
     
     init(record: CKRecord) {
         self.a = record["a"] as! Int
@@ -19,6 +20,7 @@ public class StateCount {
         self.c = record["c"] as! Int
         self.d = record["d"] as! Int
         self.e = record["e"] as! Int
+        self.totalAttempts = record["totalAttempts"] as! Int
     }
     
     init() {
@@ -27,6 +29,7 @@ public class StateCount {
         self.c = 0
         self.d = 0
         self.e = 0
+        self.totalAttempts = 0
     }
     
     class var max: Int { return 42231 }
@@ -36,6 +39,7 @@ public class StateCount {
     
     // return new state
     func update(currentState: Int, hasCorrectAnswer: Bool) -> Int {
+        totalAttempts += 1
         switch currentState {
         case -1:    // F
             e += 1

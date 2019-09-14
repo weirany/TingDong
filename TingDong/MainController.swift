@@ -366,6 +366,7 @@ class MainController: UIViewController {
         record.setValue(self.latestStateCount.c, forKey: "c")
         record.setValue(self.latestStateCount.d, forKey: "d")
         record.setValue(self.latestStateCount.e, forKey: "e")
+        record.setValue(self.latestStateCount.totalAttempts, forKey: "totalAttempts")
         publicDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
