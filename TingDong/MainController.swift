@@ -1,10 +1,14 @@
 import UIKit
 import CloudKit
+import AVFoundation
 
 class MainController: UIViewController {
     
     var publicDB: CKDatabase!
     var privateDB: CKDatabase!
+    let synthesizer = AVSpeechSynthesizer()
+    var timer: Timer!
+    var speakRate: Float = 0.5
 
     // local
     var latestStateCount: StateCount!
@@ -36,6 +40,16 @@ class MainController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // initialize audio session
+        do { try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback) }
+        catch let error as NSError {
+            print("Error: Could not set audio category: \(error), \(error.userInfo)")
+        }
+        do { try AVAudioSession.sharedInstance().setActive(true) }
+        catch let error as NSError {
+            print("Error: Could not setActive to true: \(error), \(error.userInfo)")
+        }
         
         // initialize ui
         resetUIGetReadyForNextWord()
@@ -86,12 +100,12 @@ class MainController: UIViewController {
     }
     
     func transitionToNextWord() {
+        self.stopSpeaking()
         self.readNextWord { (word, aeword) in
             self.nextWord = word
             self.nextAEWord = aeword
             self.readNextThreeOtherWordDefs {
                 DispatchQueue.main.async {
-                    // randomize answers
                     self.correctAnswerIndex = Int.random(in: 0..<4)
                     var trans = self.nextThreeOtherWordTrans!
                     trans.insert(self.nextWord!.translation, at: self.correctAnswerIndex)
@@ -99,11 +113,33 @@ class MainController: UIViewController {
                     self.transLabel2.text = trans[1]
                     self.transLabel3.text = trans[2]
                     self.transLabel4.text = trans[3]
-                    // ready to answer
                     self.answered = false
+                    self.speakInALoop()
                 }
             }
         }
+    }
+    
+    @objc func speak() {
+        if !self.synthesizer.isSpeaking {
+            let utterance = AVSpeechUtterance(string: self.nextWord.word)
+//            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+            utterance.rate = self.speakRate
+            if (self.speakRate > 0.1) {
+                self.speakRate -= 0.1
+            }
+            self.synthesizer.speak(utterance)
+        }
+    }
+    
+    func speakInALoop() {
+        timer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(speak), userInfo: nil, repeats: true)
+    }
+    
+    func stopSpeaking() {
+        timer?.invalidate()
+        synthesizer.stopSpeaking(at: .word)
+        speakRate = 0.5
     }
     
     func handleAnswer(hasCorrectAnswer: Bool, completion: @escaping () -> Void) {
