@@ -116,10 +116,7 @@ class MainController: UIViewController {
                 self.writeLatestStateCountToCloud { () in
                     // update AEWord (cloud only)
                     self.writeLatestAEWordToCloud(newState: newState) { () in
-                        // update history (cloud only)
-                        self.writeLatestHistoryToCloud(toState: newState) { () in
-                            completion()
-                        }
+                        completion()
                     }
                 }
                 self.updateUIStateCounts()
@@ -351,13 +348,13 @@ class MainController: UIViewController {
             }
         }
         if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized) {
-            privateDB.add(queryOp)
+            publicDB.add(queryOp)
         }
         else {
             self.latestStateCount = StateCount()
             self.writeLatestStateCountToCloud {
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
-                self.privateDB.add(queryOp)
+                self.publicDB.add(queryOp)
             }
         }
     }
@@ -369,7 +366,7 @@ class MainController: UIViewController {
         record.setValue(self.latestStateCount.c, forKey: "c")
         record.setValue(self.latestStateCount.d, forKey: "d")
         record.setValue(self.latestStateCount.e, forKey: "e")
-        privateDB.save(record) { (rec, error) in
+        publicDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
@@ -384,19 +381,6 @@ class MainController: UIViewController {
         record.setValue(newState, forKey: "state")
         record.setValue(nextAEWord.wordId, forKey: "wordId")
         privateDB.save(record) { (rec, error) in
-            if let error = error {
-                fatalError(error.localizedDescription)
-            }
-            completion()
-        }
-    }
-    
-    func writeLatestHistoryToCloud(toState: Int, completion: @escaping () -> Void) {
-        let record = CKRecord(recordType: "History")
-        record.setValue(nextAEWord.state, forKey: "fromState")
-        record.setValue(toState, forKey: "toState")
-        record.setValue(nextAEWord.wordId, forKey: "wordId")
-        publicDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
