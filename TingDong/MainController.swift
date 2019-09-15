@@ -133,6 +133,7 @@ class MainController: UIViewController {
     }
     
     func speakInALoop() {
+        speak()
         timer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(speak), userInfo: nil, repeats: true)
     }
     
