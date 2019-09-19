@@ -42,8 +42,10 @@ class MainController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // testing
+////         testing
 //        UserDefaults.standard.set(false, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
+//        UserDefaults.standard.set(false, forKey: Constants.UserDefaultsKeys.hasUserConfigInitialized)
+//        UserDefaults.standard.set(false, forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized)
         
         // initialize audio session
         do { try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback) }
@@ -151,10 +153,10 @@ class MainController: UIViewController {
         // update touchOrNot (local then cloud)
         touchedOrNot.update(aeword: nextAEWord)
         if nextAEWord.state == -1 {
-            writeTouchedOrNotToCloud { () in
+            writeTouchedOrNotToCloud { (_) in
                 // update state count (local then cloud), then update UI. 
                 let newState = self.latestStateCount.update(currentState: self.nextAEWord.state, hasCorrectAnswer: hasCorrectAnswer)
-                self.writeLatestStateCountToCloud { () in
+                self.writeLatestStateCountToCloud { (_) in
                     // update AEWord (cloud only)
                     self.writeLatestAEWordToCloud(newState: newState) { () in
                         completion()
@@ -195,8 +197,8 @@ class MainController: UIViewController {
                                 DispatchQueue.main.async {
                                     self.updateUIStateCounts()
                                 }
-                                self.readTouchedOrNotFromCloud { (result) in
-                                    self.touchedOrNot = result
+                                self.readTouchedOrNotFromCloud { (record) in
+                                    self.touchedOrNot = TouchedOrNot(record: record)
                                     completion()
                                 }
                             }
@@ -334,14 +336,14 @@ class MainController: UIViewController {
         publicDB.add(queryOp)
     }
     
-    func readTouchedOrNotFromCloud(completion: @escaping (_ result: TouchedOrNot) -> Void) {
-        var result: TouchedOrNot? = nil
+    func readTouchedOrNotFromCloud(completion: @escaping (_ record: CKRecord) -> Void) {
+        var result: CKRecord? = nil
         let pred = NSPredicate(value: true)
         let query = CKQuery(recordType: "TouchedOrNot", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
         queryOp.resultsLimit = 1
         queryOp.recordFetchedBlock = { record in
-            result = TouchedOrNot(record: record)
+            result = record
         }
         queryOp.queryCompletionBlock = { queryCursor, error in
             if let error = error {
@@ -355,26 +357,31 @@ class MainController: UIViewController {
             }
         }
         if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized) {
-            privateDB.add(queryOp)
+            publicDB.add(queryOp)
         }
         else {
             self.touchedOrNot = TouchedOrNot()
-            self.writeTouchedOrNotToCloud {
+            self.writeTouchedOrNotToCloud { (record) in
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized)
-                self.privateDB.add(queryOp)
+                completion(record)
             }
         }
     }
     
-    func writeTouchedOrNotToCloud(completion: @escaping () -> Void) {
+    func writeTouchedOrNotToCloud(completion: @escaping (_ record: CKRecord) -> Void) {
         let record = CKRecord(recordType: "TouchedOrNot")
         record.setValue(self.touchedOrNot.touchedStr, forKey: "touched")
         record.setValue(self.touchedOrNot.untouchedStr, forKey: "untouched")
-        privateDB.save(record) { (rec, error) in
+        publicDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            completion()
+            if let rec = rec {
+                completion(rec)
+            }
+            else {
+                fatalError("neither record nor error has been return while saving touchedOrNot?!")
+            }
         }
     }
     
@@ -400,9 +407,9 @@ class MainController: UIViewController {
         }
         else {
             self.userConfig = UserConfig(userId: userId)
-            self.writeUserConfigToCloud {
+            self.writeUserConfigToCloud { (record) in
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasUserConfigInitialized)
-                self.publicDB.add(queryOp)
+                completion(record)
             }
         }
     }
@@ -432,14 +439,14 @@ class MainController: UIViewController {
         }
         else {
             self.latestStateCount = StateCount()
-            self.writeLatestStateCountToCloud {
+            self.writeLatestStateCountToCloud { (record) in
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
-                self.publicDB.add(queryOp)
+                completion(record)
             }
         }
     }
     
-    func writeUserConfigToCloud(completion: @escaping () -> Void) {
+    func writeUserConfigToCloud(completion: @escaping (_ record: CKRecord) -> Void) {
         let record = CKRecord(recordType: "UserConfig")
         record.setValue(self.userConfig.userId, forKey: "userId")
         record.setValue(self.userConfig.aOrB, forKey: "aOrB")
@@ -447,11 +454,16 @@ class MainController: UIViewController {
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            completion()
+            if let rec = rec {
+                completion(rec)
+            }
+            else {
+                fatalError("neither record nor error has been return while saving user config?!")
+            }
         }
     }
     
-    func writeLatestStateCountToCloud(completion: @escaping () -> Void) {
+    func writeLatestStateCountToCloud(completion: @escaping (_ record: CKRecord) -> Void) {
         let record = CKRecord(recordType: "StateCount")
         record.setValue(self.latestStateCount.a, forKey: "a")
         record.setValue(self.latestStateCount.b, forKey: "b")
@@ -463,7 +475,12 @@ class MainController: UIViewController {
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            completion()
+            if let rec = rec {
+                completion(rec)
+            }
+            else {
+                fatalError("neither record nor error has been return while saving state count?!")
+            }
         }
     }
     
