@@ -2,6 +2,11 @@ import UIKit
 import CloudKit
 import AVFoundation
 
+// todo:
+// # AB testing logic
+// # shouldn't tappable while initially loading UI
+// # done!
+
 class MainController: UIViewController {
     
     var publicDB: CKDatabase!
@@ -162,7 +167,9 @@ class MainController: UIViewController {
                         completion()
                     }
                 }
-                self.updateUIStateCounts()
+                DispatchQueue.main.async {
+                    self.updateUIStateCounts()
+                }
             }
         }
     }
@@ -505,22 +512,20 @@ class MainController: UIViewController {
             transitionToNextWord()
         }
         else {
-            answered = true
+            self.answered = true
             let tappedIndex = sender.view?.tag
-//            DispatchQueue.global().async {
-//                self.handleAnswer(hasCorrectAnswer: tappedIndex == self.correctAnswerIndex) { () in
-                    DispatchQueue.main.async {
-                        let animation = {
-                            self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
-                            self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
-                            self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
-                            self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
-                        }
-                        UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
-                                       animations: animation ) { (finished: Bool) in
-                        }
-//                    }
-//                }
+            self.handleAnswer(hasCorrectAnswer: tappedIndex == self.correctAnswerIndex) { () in
+                DispatchQueue.main.async {
+                    let animation = {
+                        self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
+                        self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
+                        self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
+                        self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
+                    }
+                    UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
+                                   animations: animation ) { (finished: Bool) in
+                    }
+                }
             }
         }
     }

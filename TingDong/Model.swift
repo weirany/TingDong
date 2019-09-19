@@ -204,7 +204,9 @@ public class TouchedOrNot {
     func update(aeword: AEWord) {
         if aeword.state == -1 {
             touched.append(aeword.wordId)
-            untouched.removeFirst(aeword.wordId)
+            if let index = untouched.firstIndex(of: aeword.wordId) {
+                untouched.remove(at: index)
+            }
             touchedStr = Util.intArrayToString(arr: touched)
             untouchedStr = Util.intArrayToString(arr: untouched)
         }
