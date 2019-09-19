@@ -11,6 +11,7 @@ class MainController: UIViewController {
     var speakRate: Float = 0.5
 
     // local
+    var userConfig: UserConfig!
     var latestStateCount: StateCount!
     var tenDayAgoStateCount: StateCount!
     var hundredDayAgoStateCount: StateCount!
@@ -40,6 +41,9 @@ class MainController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // testing
+//        UserDefaults.standard.set(false, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
         
         // initialize audio session
         do { try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback) }
@@ -162,36 +166,46 @@ class MainController: UIViewController {
     }
     
     func initAllLocalVarsFromCloud(completion: @escaping () -> Void) {
-        readStateCountFromCloud(0) { (record) in
-            if let record = record {
-                self.latestStateCount = StateCount(record: record)
-                self.readStateCountFromCloud(10) { (record) in
+        readUserIdFromCloud { (userId) in
+            self.readUserConfigFromCloud(userId) { (record)  in
+                if let record = record {
+                    self.userConfig = UserConfig(record: record)
+                }
+                else {
+                    fatalError("Got nil while getting user config from cloud?!")
+                }
+                self.readStateCountFromCloud(0) { (record) in
                     if let record = record {
-                        self.tenDayAgoStateCount = StateCount(record: record)
+                        self.latestStateCount = StateCount(record: record)
+                        self.readStateCountFromCloud(10) { (record) in
+                            if let record = record {
+                                self.tenDayAgoStateCount = StateCount(record: record)
+                            }
+                            else {
+                                self.tenDayAgoStateCount = StateCount()
+                            }
+                            self.readStateCountFromCloud(100) { (record) in
+                                if let record = record {
+                                    self.hundredDayAgoStateCount = StateCount(record: record)
+                                }
+                                else {
+                                    self.hundredDayAgoStateCount = StateCount()
+                                }
+                                
+                                DispatchQueue.main.async {
+                                    self.updateUIStateCounts()
+                                }
+                                self.readTouchedOrNotFromCloud { (result) in
+                                    self.touchedOrNot = result
+                                    completion()
+                                }
+                            }
+                        }
                     }
                     else {
-                        self.tenDayAgoStateCount = StateCount()
-                    }
-                    self.readStateCountFromCloud(100) { (record) in
-                        if let record = record {
-                            self.hundredDayAgoStateCount = StateCount(record: record)
-                        }
-                        else {
-                            self.hundredDayAgoStateCount = StateCount()
-                        }
-
-                        DispatchQueue.main.async {
-                            self.updateUIStateCounts()
-                        }
-                        self.readTouchedOrNotFromCloud { (result) in
-                            self.touchedOrNot = result
-                            completion()
-                        }
+                        fatalError("Got nil while getting latest State Count from cloud")
                     }
                 }
-            }
-            else {
-                fatalError("Got nil while getting latest State Count from cloud")
             }
         }
     }
@@ -363,6 +377,35 @@ class MainController: UIViewController {
             completion()
         }
     }
+    
+    func readUserConfigFromCloud(_ userId: String, completion: @escaping (_ record: CKRecord?) -> Void) {
+        let pred = NSPredicate(format: "userId = %@", userId)
+        let query = CKQuery(recordType: "UserConfig", predicate: pred)
+        let queryOp = CKQueryOperation(query: query)
+        var result: CKRecord? = nil
+        queryOp.resultsLimit = 1
+        queryOp.recordFetchedBlock = { record in
+            result = record
+        }
+        queryOp.queryCompletionBlock = { queryCursor, error in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            else {
+                completion(result)
+            }
+        }
+        if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasUserConfigInitialized) {
+            publicDB.add(queryOp)
+        }
+        else {
+            self.userConfig = UserConfig(userId: userId)
+            self.writeUserConfigToCloud {
+                UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasUserConfigInitialized)
+                self.publicDB.add(queryOp)
+            }
+        }
+    }
 
     func readStateCountFromCloud(_ numOfDaysAgo: Int, completion: @escaping (_ record: CKRecord?) -> Void) {
         let queryDate = Calendar.current.date(byAdding: .day, value: -numOfDaysAgo, to: Date())!
@@ -393,6 +436,18 @@ class MainController: UIViewController {
                 UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
                 self.publicDB.add(queryOp)
             }
+        }
+    }
+    
+    func writeUserConfigToCloud(completion: @escaping () -> Void) {
+        let record = CKRecord(recordType: "UserConfig")
+        record.setValue(self.userConfig.userId, forKey: "userId")
+        record.setValue(self.userConfig.aOrB, forKey: "aOrB")
+        publicDB.save(record) { (rec, error) in
+            if let error = error {
+                fatalError(error.localizedDescription)
+            }
+            completion()
         }
     }
     
@@ -434,15 +489,21 @@ class MainController: UIViewController {
         }
         else {
             answered = true
-            var tappedIndex = sender.view?.tag
-            let animation = {
-                self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
-                self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
-                self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
-                self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
-            }
-            UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
-                           animations: animation ) { (finished: Bool) in
+            let tappedIndex = sender.view?.tag
+//            DispatchQueue.global().async {
+//                self.handleAnswer(hasCorrectAnswer: tappedIndex == self.correctAnswerIndex) { () in
+                    DispatchQueue.main.async {
+                        let animation = {
+                            self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
+                            self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
+                            self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
+                            self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
+                        }
+                        UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
+                                       animations: animation ) { (finished: Bool) in
+                        }
+//                    }
+//                }
             }
         }
     }
@@ -457,5 +518,17 @@ class MainController: UIViewController {
         transLabel2.alpha = 1
         transLabel3.alpha = 1
         transLabel4.alpha = 1
+    }
+    
+    func readUserIdFromCloud(complete: @escaping (_ instance: String) -> ()) {
+        let container = CKContainer.default()
+        container.fetchUserRecordID() { recordID, error in
+            if let error = error {
+                print(error.localizedDescription)
+                fatalError("trying to fetch iCloud user id but got error?!")
+            } else if let recordID = recordID {
+                complete(recordID.recordName)
+            }
+        }
     }
 }

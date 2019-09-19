@@ -1,6 +1,21 @@
 import Foundation
 import CloudKit
 
+public class UserConfig {
+    var userId: String!
+    var aOrB: Int!    // a: 1; b: 2
+
+    init(record: CKRecord) {
+        self.userId = (record["userId"] as! String)
+        self.aOrB = (record["aOrB"] as! Int)
+    }
+    
+    init(userId: String) {
+        self.userId = userId
+        self.aOrB = Int.random(in: 1...2)
+    }
+}
+
 //○ A: Incorrect/Correct: learned (学会)
 //○ B: Correct/Incorrect: forgot
 //○ C: Correct/Correct: mastered (牢记)
