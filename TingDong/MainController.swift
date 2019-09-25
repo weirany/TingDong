@@ -47,11 +47,6 @@ class MainController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-////         testing
-//        UserDefaults.standard.set(false, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
-//        UserDefaults.standard.set(false, forKey: Constants.UserDefaultsKeys.hasUserConfigInitialized)
-//        UserDefaults.standard.set(false, forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized)
-        
         // initialize audio session
         do { try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback) }
         catch let error as NSError {
@@ -360,19 +355,15 @@ class MainController: UIViewController {
                 completion(result)
             }
             else {
-                fatalError("Got nil while getting TouchedOrNot from cloud")
+                // not error, but no result found, initialize it
+                self.touchedOrNot = TouchedOrNot()
+                self.writeTouchedOrNotToCloud { (record) in
+                    completion(record)
+                }
             }
         }
-        if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized) {
-            publicDB.add(queryOp)
-        }
-        else {
-            self.touchedOrNot = TouchedOrNot()
-            self.writeTouchedOrNotToCloud { (record) in
-                UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasTouchedOrNotInitialized)
-                completion(record)
-            }
-        }
+        publicDB.add(queryOp)
+
     }
     
     func writeTouchedOrNotToCloud(completion: @escaping (_ record: CKRecord) -> Void) {
@@ -405,20 +396,18 @@ class MainController: UIViewController {
             if let error = error {
                 fatalError(error.localizedDescription)
             }
-            else {
+            else if let result = result {
                 completion(result)
             }
-        }
-        if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasUserConfigInitialized) {
-            publicDB.add(queryOp)
-        }
-        else {
-            self.userConfig = UserConfig(userId: userId)
-            self.writeUserConfigToCloud { (record) in
-                UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasUserConfigInitialized)
-                completion(record)
+            else {
+                // not error, but no result found, initialize it
+                self.userConfig = UserConfig(userId: userId)
+                self.writeUserConfigToCloud { (record) in
+                    completion(record)
+                }
             }
         }
+        publicDB.add(queryOp)
     }
 
     func readStateCountFromCloud(_ numOfDaysAgo: Int, completion: @escaping (_ record: CKRecord?) -> Void) {
@@ -437,20 +426,21 @@ class MainController: UIViewController {
             if let error = error {
                 fatalError(error.localizedDescription)
             }
+            else if let result = result {
+                completion(result)
+            }
+            else if numOfDaysAgo == 0 {
+                // for 0 day ago, not error, but no result found, initialize it
+                self.latestStateCount = StateCount()
+                self.writeLatestStateCountToCloud { (record) in
+                    completion(record)
+                }
+            }
             else {
                 completion(result)
             }
         }
-        if UserDefaults.standard.bool(forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized) {
-            publicDB.add(queryOp)
-        }
-        else {
-            self.latestStateCount = StateCount()
-            self.writeLatestStateCountToCloud { (record) in
-                UserDefaults.standard.set(true, forKey: Constants.UserDefaultsKeys.hasStateCountsInitialized)
-                completion(record)
-            }
-        }
+        publicDB.add(queryOp)
     }
     
     func writeUserConfigToCloud(completion: @escaping (_ record: CKRecord) -> Void) {

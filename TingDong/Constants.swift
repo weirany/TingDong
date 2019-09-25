@@ -11,8 +11,8 @@ import Foundation
 
 struct Constants {
     struct UserDefaultsKeys {
-        static let hasUserConfigInitialized: String = "hasUserConfigInitialized"
-        static let hasStateCountsInitialized: String = "hasStateCountsInitialized"
-        static let hasTouchedOrNotInitialized: String = "hasTouchedOrNotInitialized"
+//        static let hasUserConfigInitialized: String = "hasUserConfigInitialized"
+//        static let hasStateCountsInitialized: String = "hasStateCountsInitialized"
+//        static let hasTouchedOrNotInitialized: String = "hasTouchedOrNotInitialized"
     }
 }

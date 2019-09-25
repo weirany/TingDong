@@ -186,7 +186,7 @@ public class TouchedOrNot {
     // if touched list length < 4, then get all 3 from untouched.
     func otherThreeRandomWordIds(excludeWordId: Int) -> [Int] {
         var result: [Int] = []
-        var list = touched.count < 4 ? untouched : touched
+        let list = touched.count < 4 ? untouched : touched
         
         while result.count < 3 {
             let temp = list[Int.random(in: 0..<list.count)]
