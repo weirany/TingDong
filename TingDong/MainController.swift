@@ -3,8 +3,9 @@ import CloudKit
 import AVFoundation
 
 // todo:
-// # AB testing logic
+// # dark mode color
 // # shouldn't tappable while initially loading UI
+// # code to rehydrate the public word list on production
 // # done!
 
 class MainController: UIViewController {
@@ -276,19 +277,26 @@ class MainController: UIViewController {
     
     func readNextAToEFromCloud(anyAToEWord: Bool, completion: @escaping (_ aeword: AEWord?) -> Void) {
         //    - How frequently each category got picked
+        //      for type 1 (void forgetting words)
         //    ○ D: 1| 0
         //    ○ C: 2 | 1, 2
         //    ○ E: 3 | 3, 4, 5
         //    ○ B: 5 | 6, 7, 8, 9, 10
         //    ○ A: 5 | 11, 12, 13, 14, 15
+        //      for type 2 (repeat forgetting words)
+        //    ○ A: 1| 0
+        //    ○ C: 2 | 1, 2
+        //    ○ E: 3 | 3, 4, 5
+        //    ○ B: 5 | 6, 7, 8, 9, 10
+        //    ○ D: 5 | 11, 12, 13, 14, 15
         let ran = Int.random(in: 0..<16)
         var stateToPickNext = 0
         switch ran {
-        case 0: stateToPickNext = 4
+        case 0: stateToPickNext = userConfig.aOrB == 1 ? 4 : 1
         case 1, 2: stateToPickNext = 3
         case 3, 4, 5: stateToPickNext = 5
         case 6, 7, 8, 9, 10: stateToPickNext = 2
-        case 11, 12, 13, 14, 15: stateToPickNext = 1
+        case 11, 12, 13, 14, 15: stateToPickNext = userConfig.aOrB == 1 ? 1 : 4
         default:
             fatalError("Got a random number outside of [0,15]")
         }
