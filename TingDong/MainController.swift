@@ -6,6 +6,7 @@ import AVFoundation
 // # dark mode color
 // # shouldn't tappable while initially loading UI
 // # code to rehydrate the public word list on production
+// # change to 1 day and 7 days ago
 // # done!
 
 class MainController: UIViewController {
