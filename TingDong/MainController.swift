@@ -3,10 +3,9 @@ import CloudKit
 import AVFoundation
 
 // todo:
-// # dark mode color
-// # shouldn't tappable while initially loading UI
 // # code to rehydrate the public word list on production
 // # change to 1 day and 7 days ago
+// # handle icloud not enabled
 // # done!
 
 class MainController: UIViewController {
@@ -16,6 +15,7 @@ class MainController: UIViewController {
     let synthesizer = AVSpeechSynthesizer()
     var timer: Timer!
     var speakRate: Float = 0.5
+    var canAnswerNow = false
 
     // local
     var userConfig: UserConfig!
@@ -62,16 +62,6 @@ class MainController: UIViewController {
         // initialize ui
         resetUIGetReadyForNextWord()
         
-        // events
-        var tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        transLabel1.addGestureRecognizer(tap)
-        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        transLabel2.addGestureRecognizer(tap)
-        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        transLabel3.addGestureRecognizer(tap)
-        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        transLabel4.addGestureRecognizer(tap)
-
         let container = CKContainer.default()
         publicDB = container.publicCloudDatabase
         privateDB = container.privateCloudDatabase
@@ -89,6 +79,16 @@ class MainController: UIViewController {
                 }
             }
         }
+        
+        // events
+        var tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        self.transLabel1.addGestureRecognizer(tap)
+        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        self.transLabel2.addGestureRecognizer(tap)
+        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        self.transLabel3.addGestureRecognizer(tap)
+        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+        self.transLabel4.addGestureRecognizer(tap)
         
         initAllLocalVarsFromCloud {
             self.transitionToNextWord()
@@ -123,6 +123,7 @@ class MainController: UIViewController {
                     self.transLabel4.text = trans[3]
                     self.answered = false
                     self.speakInALoop()
+                    self.canAnswerNow = true
                 }
             }
         }
@@ -506,7 +507,12 @@ class MainController: UIViewController {
     
     @objc
     func answerTapped(sender:UITapGestureRecognizer) {
+        guard canAnswerNow else {
+            return
+        }
+        
         if answered {
+            canAnswerNow = false
             resetUIGetReadyForNextWord()
             transitionToNextWord()
         }
