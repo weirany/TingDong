@@ -3,9 +3,8 @@ import CloudKit
 import AVFoundation
 
 // todo:
-// # code to rehydrate the public word list on production
-// # change to 1 day and 7 days ago
 // # handle icloud not enabled
+// # code to rehydrate the public word list on production
 // # done!
 
 class MainController: UIViewController {
@@ -20,8 +19,8 @@ class MainController: UIViewController {
     // local
     var userConfig: UserConfig!
     var latestStateCount: StateCount!
-    var tenDayAgoStateCount: StateCount!
-    var hundredDayAgoStateCount: StateCount!
+    var oneDayAgoStateCount: StateCount!
+    var sevenDayAgoStateCount: StateCount!
     var touchedOrNot: TouchedOrNot!
 
     var nextWord: Word!
@@ -34,12 +33,12 @@ class MainController: UIViewController {
     @IBOutlet weak var master0: UILabel!
     @IBOutlet weak var learned0: UILabel!
     @IBOutlet weak var untouched0: UILabel!
-    @IBOutlet weak var master10: UILabel!
-    @IBOutlet weak var learned10: UILabel!
-    @IBOutlet weak var untouched10: UILabel!
-    @IBOutlet weak var master100: UILabel!
-    @IBOutlet weak var learned100: UILabel!
-    @IBOutlet weak var untouched100: UILabel!
+    @IBOutlet weak var master1: UILabel!
+    @IBOutlet weak var learned1: UILabel!
+    @IBOutlet weak var untouched1: UILabel!
+    @IBOutlet weak var master7: UILabel!
+    @IBOutlet weak var learned7: UILabel!
+    @IBOutlet weak var untouched7: UILabel!
 
     @IBOutlet weak var transLabel1: UILabel!
     @IBOutlet weak var transLabel2: UILabel!
@@ -99,12 +98,12 @@ class MainController: UIViewController {
         master0.text = String(latestStateCount.c)
         learned0.text = String(latestStateCount.a)
         untouched0.text = String(latestStateCount.f)
-        master10.text = String(tenDayAgoStateCount.c)
-        learned10.text = String(tenDayAgoStateCount.a)
-        untouched10.text = String(tenDayAgoStateCount.f)
-        master100.text = String(hundredDayAgoStateCount.c)
-        learned100.text = String(hundredDayAgoStateCount.a)
-        untouched100.text = String(hundredDayAgoStateCount.f)
+        master1.text = String(oneDayAgoStateCount.c)
+        learned1.text = String(oneDayAgoStateCount.a)
+        untouched1.text = String(oneDayAgoStateCount.f)
+        master7.text = String(sevenDayAgoStateCount.c)
+        learned7.text = String(sevenDayAgoStateCount.a)
+        untouched7.text = String(sevenDayAgoStateCount.f)
     }
     
     func transitionToNextWord() {
@@ -184,19 +183,19 @@ class MainController: UIViewController {
                 self.readStateCountFromCloud(0) { (record) in
                     if let record = record {
                         self.latestStateCount = StateCount(record: record)
-                        self.readStateCountFromCloud(10) { (record) in
+                        self.readStateCountFromCloud(1) { (record) in
                             if let record = record {
-                                self.tenDayAgoStateCount = StateCount(record: record)
+                                self.oneDayAgoStateCount = StateCount(record: record)
                             }
                             else {
-                                self.tenDayAgoStateCount = StateCount()
+                                self.oneDayAgoStateCount = StateCount()
                             }
-                            self.readStateCountFromCloud(100) { (record) in
+                            self.readStateCountFromCloud(7) { (record) in
                                 if let record = record {
-                                    self.hundredDayAgoStateCount = StateCount(record: record)
+                                    self.sevenDayAgoStateCount = StateCount(record: record)
                                 }
                                 else {
-                                    self.hundredDayAgoStateCount = StateCount()
+                                    self.sevenDayAgoStateCount = StateCount()
                                 }
                                 
                                 DispatchQueue.main.async {
@@ -305,7 +304,7 @@ class MainController: UIViewController {
         
         // logic: the earliest from a given state, but it has to be dued.
         var result: AEWord? = nil
-        let pred = anyAToEWord ? NSPredicate(value: true) : NSPredicate(format: "(state == %d) AND (dueAt < %@)", stateToPickNext, NSDate())
+        let pred = anyAToEWord ? NSPredicate(value: true) : NSPredicate(format: "(state == %d) AND (dueAt < %@)", stateToPickNext, Date() as NSDate)
         let query = CKQuery(recordType: "AEWord", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
         let sort = NSSortDescriptor(key: "dueAt", ascending: true)
