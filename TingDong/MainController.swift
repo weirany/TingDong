@@ -154,19 +154,17 @@ class MainController: UIViewController {
     func handleAnswer(hasCorrectAnswer: Bool, completion: @escaping () -> Void) {
         // update touchOrNot (local then cloud)
         touchedOrNot.update(aeword: nextAEWord)
-        if nextAEWord.state == -1 {
-            writeTouchedOrNotToCloud { (_) in
-                // update state count (local then cloud), then update UI. 
-                let newState = self.latestStateCount.update(currentState: self.nextAEWord.state, hasCorrectAnswer: hasCorrectAnswer)
-                self.writeLatestStateCountToCloud { (_) in
-                    // update AEWord (cloud only)
-                    self.writeLatestAEWordToCloud(newState: newState) { () in
-                        completion()
-                    }
+        writeTouchedOrNotToCloudIfNeeded() {
+            // update state count (local then cloud), then update UI.
+            let newState = self.latestStateCount.update(currentState: self.nextAEWord.state, hasCorrectAnswer: hasCorrectAnswer)
+            self.writeLatestStateCountToCloud { (_) in
+                // update AEWord (cloud only)
+                self.writeLatestAEWordToCloud(newState: newState) { () in
+                    completion()
                 }
-                DispatchQueue.main.async {
-                    self.updateUIStateCounts()
-                }
+            }
+            DispatchQueue.main.async {
+                self.updateUIStateCounts()
             }
         }
     }
@@ -279,32 +277,32 @@ class MainController: UIViewController {
     func readNextAToEFromCloud(anyAToEWord: Bool, completion: @escaping (_ aeword: AEWord?) -> Void) {
         //    - How frequently each category got picked
         //      for type 1 (void forgetting words)
-        //    ○ D: 1| 0
-        //    ○ C: 2 | 1, 2
-        //    ○ E: 3 | 3, 4, 5
-        //    ○ B: 5 | 6, 7, 8, 9, 10
-        //    ○ A: 5 | 11, 12, 13, 14, 15
+        //    ○ D: 1/16 (0)
+        //    ○ C: 2/16 (1-2)
+        //    ○ E: 3/16 (3-5)
+        //    ○ B: 5/16 (6-10)
+        //    ○ A: 5/16 (11-15)
         //      for type 2 (repeat forgetting words)
-        //    ○ A: 1| 0
-        //    ○ C: 2 | 1, 2
-        //    ○ E: 3 | 3, 4, 5
-        //    ○ B: 5 | 6, 7, 8, 9, 10
-        //    ○ D: 5 | 11, 12, 13, 14, 15
+        //    ○ A: 1/16 (0)
+        //    ○ C: 2/16 (1-2)
+        //    ○ E: 3/16 (3-5)
+        //    ○ B: 5/16 (6-10)
+        //    ○ D: 5/16 (11-15)
         let ran = Int.random(in: 0..<16)
-        var stateToPickNext = 0
+        var stateToPickNext: WordState
         switch ran {
-        case 0: stateToPickNext = userConfig.aOrB == 1 ? 4 : 1
-        case 1, 2: stateToPickNext = 3
-        case 3, 4, 5: stateToPickNext = 5
-        case 6, 7, 8, 9, 10: stateToPickNext = 2
-        case 11, 12, 13, 14, 15: stateToPickNext = userConfig.aOrB == 1 ? 1 : 4
+        case 0: stateToPickNext = userConfig.aOrB == .a ? .d : .a
+        case 1, 2: stateToPickNext = .c
+        case 3, 4, 5: stateToPickNext = .e
+        case 6, 7, 8, 9, 10: stateToPickNext = .b
+        case 11, 12, 13, 14, 15: stateToPickNext = userConfig.aOrB == .a ? .a : .d
         default:
             fatalError("Got a random number outside of [0,15]")
         }
         
         // logic: the earliest from a given state, but it has to be dued.
         var result: AEWord? = nil
-        let pred = anyAToEWord ? NSPredicate(value: true) : NSPredicate(format: "(state == %d) AND (dueAt < %@)", stateToPickNext, Date() as NSDate)
+        let pred = anyAToEWord ? NSPredicate(value: true) : NSPredicate(format: "(state == %d) AND (dueAt < %@)", stateToPickNext.rawValue, Date() as NSDate)
         let query = CKQuery(recordType: "AEWord", predicate: pred)
         let queryOp = CKQueryOperation(query: query)
         let sort = NSSortDescriptor(key: "dueAt", ascending: true)
@@ -373,6 +371,17 @@ class MainController: UIViewController {
         }
         publicDB.add(queryOp)
 
+    }
+    
+    func writeTouchedOrNotToCloudIfNeeded(completion: @escaping () -> Void) {
+        if nextAEWord.state == .f {
+            writeTouchedOrNotToCloud() { _ in
+                completion()
+            }
+        }
+        else {
+            completion()
+        }
     }
     
     func writeTouchedOrNotToCloud(completion: @escaping (_ record: CKRecord) -> Void) {
@@ -455,7 +464,7 @@ class MainController: UIViewController {
     func writeUserConfigToCloud(completion: @escaping (_ record: CKRecord) -> Void) {
         let record = CKRecord(recordType: "UserConfig")
         record.setValue(self.userConfig.userId, forKey: "userId")
-        record.setValue(self.userConfig.aOrB, forKey: "aOrB")
+        record.setValue(self.userConfig.aOrB.rawValue, forKey: "aOrB")
         publicDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
@@ -490,11 +499,11 @@ class MainController: UIViewController {
         }
     }
     
-    func writeLatestAEWordToCloud(newState: Int, completion: @escaping () -> Void) {
+    func writeLatestAEWordToCloud(newState: WordState, completion: @escaping () -> Void) {
         let record = nextAEWord.record ?? CKRecord(recordType: "AEWord")
         record.setValue(nextAEWord.newDueAt, forKey: "dueAt")
         record.setValue(nextAEWord.enqueueAt, forKey: "enqueueAt")
-        record.setValue(newState, forKey: "state")
+        record.setValue(newState.rawValue, forKey: "state")
         record.setValue(nextAEWord.wordId, forKey: "wordId")
         privateDB.save(record) { (rec, error) in
             if let error = error {

@@ -67,6 +67,4 @@
 //}
 //
 //
-//enum WordState {
-//    case a, b, c, d, e
-//}
+

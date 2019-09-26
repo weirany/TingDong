@@ -1,22 +1,30 @@
 import Foundation
 import CloudKit
 
+public enum WordState: Int {
+    case f = -1, a = 0, b, c, d, e
+}
+
+public enum ABTesting: Int {
+    case a = 1, b = 2
+}
+
 public class UserConfig {
     var userId: String!
-    var aOrB: Int!    // a: 1; b: 2
+    var aOrB: ABTesting!
 
     init(record: CKRecord) {
         self.userId = (record["userId"] as! String)
-        self.aOrB = (record["aOrB"] as! Int)
+        self.aOrB = ABTesting(rawValue: (record["aOrB"] as! Int))
     }
     
     init(userId: String) {
         self.userId = userId
-        self.aOrB = Int.random(in: 1...2)
+        self.aOrB = ABTesting(rawValue: Int.random(in: 1...2))
     }
 }
 
-//○ A: Incorrect/Correct: learned (学会)
+//○ A: Incorrect/Correct: learned (初记)
 //○ B: Correct/Incorrect: forgot
 //○ C: Correct/Correct: mastered (牢记)
 //○ D: Incorrect/Incorrect: not ready to learn
@@ -53,64 +61,62 @@ public class StateCount {
     var f: Int { return StateCount.max - sum}
     
     // return new state
-    func update(currentState: Int, hasCorrectAnswer: Bool) -> Int {
+    func update(currentState: WordState, hasCorrectAnswer: Bool) -> WordState {
         totalAttempts += 1
         switch currentState {
-        case -1:    // F
+        case .f:
             e += 1
-            return 4
-        case 0:     // A
+            return .e
+        case .a:
             a -= 1
             if hasCorrectAnswer {
                 c += 1
-                return 2
+                return .c
             }
             else {
                 b += 1
-                return 1
+                return .b
             }
-        case 1:     // B
+        case .b:
             b -= 1
             if hasCorrectAnswer {
                 a += 1
-                return 0
+                return .a
             }
             else {
                 d += 1
-                return 3
+                return .d
             }
-        case 2:     // C
+        case .c:
             c -= 1
             if hasCorrectAnswer {
                 c += 1
-                return 2
+                return .c
             }
             else {
                 b += 1
-                return 1
+                return .b
             }
-        case 3:     // D
+        case .d:
             d -= 1
             if hasCorrectAnswer {
                 a += 1
-                return 0
+                return .a
             }
             else {
                 d += 1
-                return 3
+                return .d
             }
-        case 4:     // E
+        case .e:
             e -= 1
             if hasCorrectAnswer {
                 a += 1
-                return 0
+                return .a
             }
             else {
                 d += 1
-                return 3
+                return .d
             }
-        default:
-            fatalError("unknow state?! \(currentState)")
         }
     }
 }
@@ -118,14 +124,14 @@ public class StateCount {
 public class AEWord {
     let dueAt: Date
     let enqueueAt: Date
-    let state: Int
+    let state: WordState
     let wordId: Int
     let record: CKRecord?
     
-    init(dueAt: Date? = nil, enqueueAt: Date? = nil, state: Int? = nil, record: CKRecord? = nil, wordId: Int) {
+    init(dueAt: Date? = nil, enqueueAt: Date? = nil, state: WordState? = nil, record: CKRecord? = nil, wordId: Int) {
         self.dueAt = dueAt ?? Util.calculateDueAt(enqueueAt: Date())
         self.enqueueAt = enqueueAt ?? Date()
-        self.state = state ?? -1
+        self.state = state ?? WordState.f
         self.record = record
         self.wordId = wordId
     }
@@ -133,7 +139,7 @@ public class AEWord {
     init(record: CKRecord) {
         self.dueAt = record["dueAt"] as! Date
         self.enqueueAt = record["enqueueAt"] as! Date
-        self.state = record["state"] as! Int
+        self.state = WordState(rawValue: (record["state"] as! Int))!
         self.record = record
         self.wordId = record["wordId"] as! Int
     }
@@ -200,9 +206,9 @@ public class TouchedOrNot {
         return result
     }
     
-    // if state is -1 (F state), means it's a new word
+    // if state is F state, means it's a new word
     func update(aeword: AEWord) {
-        if aeword.state == -1 {
+        if aeword.state == .f {
             touched.append(aeword.wordId)
             if let index = untouched.firstIndex(of: aeword.wordId) {
                 untouched.remove(at: index)
