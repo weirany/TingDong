@@ -3,7 +3,6 @@ import CloudKit
 import AVFoundation
 
 // todo:
-// # handle icloud not enabled
 // # code to rehydrate the public word list on production
 // # done!
 
@@ -65,33 +64,25 @@ class MainController: UIViewController {
         publicDB = container.publicCloudDatabase
         privateDB = container.privateCloudDatabase
 
-        container.accountStatus { (status, error) in
-            if let err = error {
-                print(err.localizedDescription)
-            }
-            else {
-                switch status {
-                case .available:
-                    print("available")
-                default:
-                    print("not avaliable")
+        // nothing should work if iCloud is not enabled.
+        checkiCloudTillWorking(container: container) {
+            DispatchQueue.main.async {
+                // events
+                var tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+                self.transLabel1.addGestureRecognizer(tap)
+                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+                self.transLabel2.addGestureRecognizer(tap)
+                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+                self.transLabel3.addGestureRecognizer(tap)
+                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+                self.transLabel4.addGestureRecognizer(tap)
+                
+                self.initAllLocalVarsFromCloud {
+                    self.transitionToNextWord()
                 }
             }
         }
-        
-        // events
-        var tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        self.transLabel1.addGestureRecognizer(tap)
-        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        self.transLabel2.addGestureRecognizer(tap)
-        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        self.transLabel3.addGestureRecognizer(tap)
-        tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-        self.transLabel4.addGestureRecognizer(tap)
-        
-        initAllLocalVarsFromCloud {
-            self.transitionToNextWord()
-        }
+
     }
     
     func updateUIStateCounts() {
@@ -149,6 +140,33 @@ class MainController: UIViewController {
         timer?.invalidate()
         synthesizer.stopSpeaking(at: .word)
         speakRate = 0.5
+    }
+    
+    func checkiCloudTillWorking(container: CKContainer, completion: @escaping() -> Void) {
+        container.accountStatus { (status, error) in
+            if let err = error {
+                fatalError(err.localizedDescription)
+            }
+            else {
+                switch status {
+                case .available:
+                    completion()
+                default:
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(
+                            title: "iCloud is not available",
+                            message: "Make sure you have signed in with your Apple ID (go to Settings => Sign in to your iPhone)",
+                            preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { action in
+                            self.checkiCloudTillWorking(container: container) {
+                                completion()
+                            }
+                        }))
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                }
+            }
+        }
     }
     
     func handleAnswer(hasCorrectAnswer: Bool, completion: @escaping () -> Void) {
