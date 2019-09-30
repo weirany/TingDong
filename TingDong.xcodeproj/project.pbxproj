@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		023D5A962324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023D5A952324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift */; };
-		023D5A982324C27F00CB731A /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023D5A972324C27F00CB731A /* Constants.swift */; };
 		023D7BC722F2AA0C00825524 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023D7BC622F2AA0C00825524 /* Model.swift */; };
 		023EE69822D3175C0035592B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69722D3175C0035592B /* AppDelegate.swift */; };
 		023EE69A22D3175C0035592B /* MainController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023EE69922D3175C0035592B /* MainController.swift */; };
@@ -19,11 +18,11 @@
 		0283EF79232732E000423A1E /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0283EF78232732E000423A1E /* Util.swift */; };
 		02863FDD22D7059400F55059 /* words_mini.json in Resources */ = {isa = PBXBuildFile; fileRef = 02863FDC22D7059300F55059 /* words_mini.json */; };
 		02863FDF22D8594000F55059 /* words.json in Resources */ = {isa = PBXBuildFile; fileRef = 02863FDE22D8594000F55059 /* words.json */; };
+		05FFFECD2341CD1800E0E788 /* WordListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05FFFECC2341CD1800E0E788 /* WordListViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		023D5A952324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitializePublicZoneOneTimeCode.swift; sourceTree = "<group>"; };
-		023D5A972324C27F00CB731A /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		023D7BC622F2AA0C00825524 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		023EE69422D3175C0035592B /* TingDong.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TingDong.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		023EE69722D3175C0035592B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -37,6 +36,7 @@
 		0283EF78232732E000423A1E /* Util.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Util.swift; sourceTree = "<group>"; };
 		02863FDC22D7059300F55059 /* words_mini.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = words_mini.json; sourceTree = "<group>"; };
 		02863FDE22D8594000F55059 /* words.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = words.json; sourceTree = "<group>"; };
+		05FFFECC2341CD1800E0E788 /* WordListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WordListViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +74,7 @@
 				026C579A22D5A78500BF0E36 /* TingDong.entitlements */,
 				023EE69722D3175C0035592B /* AppDelegate.swift */,
 				023EE69922D3175C0035592B /* MainController.swift */,
+				05FFFECC2341CD1800E0E788 /* WordListViewController.swift */,
 				023EE69B22D3175C0035592B /* Main.storyboard */,
 				023EE69E22D317600035592B /* Assets.xcassets */,
 				023EE6A022D317600035592B /* LaunchScreen.storyboard */,
@@ -82,7 +83,6 @@
 				02863FDC22D7059300F55059 /* words_mini.json */,
 				023D7BC622F2AA0C00825524 /* Model.swift */,
 				023D5A952324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift */,
-				023D5A972324C27F00CB731A /* Constants.swift */,
 				0283EF78232732E000423A1E /* Util.swift */,
 			);
 			path = TingDong;
@@ -177,9 +177,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				023D5A982324C27F00CB731A /* Constants.swift in Sources */,
 				0283EF79232732E000423A1E /* Util.swift in Sources */,
 				023D7BC722F2AA0C00825524 /* Model.swift in Sources */,
+				05FFFECD2341CD1800E0E788 /* WordListViewController.swift in Sources */,
 				023D5A962324BFA200CB731A /* InitializePublicZoneOneTimeCode.swift in Sources */,
 				023EE69A22D3175C0035592B /* MainController.swift in Sources */,
 				023EE69822D3175C0035592B /* AppDelegate.swift in Sources */,

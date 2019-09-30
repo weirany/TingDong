@@ -47,41 +47,41 @@ class MainController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // initialize audio session
-        do { try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback) }
-        catch let error as NSError {
-            print("Error: Could not set audio category: \(error), \(error.userInfo)")
-        }
-        do { try AVAudioSession.sharedInstance().setActive(true) }
-        catch let error as NSError {
-            print("Error: Could not setActive to true: \(error), \(error.userInfo)")
-        }
-        
-        // initialize ui
-        resetUIGetReadyForNextWord()
-        
-        let container = CKContainer.default()
-        publicDB = container.publicCloudDatabase
-        privateDB = container.privateCloudDatabase
-
-        // nothing should work if iCloud is not enabled.
-        checkiCloudTillWorking(container: container) {
-            DispatchQueue.main.async {
-                // events
-                var tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-                self.transLabel1.addGestureRecognizer(tap)
-                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-                self.transLabel2.addGestureRecognizer(tap)
-                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-                self.transLabel3.addGestureRecognizer(tap)
-                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
-                self.transLabel4.addGestureRecognizer(tap)
-                
-                self.initAllLocalVarsFromCloud {
-                    self.transitionToNextWord()
-                }
-            }
-        }
+//        // initialize audio session
+//        do { try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback) }
+//        catch let error as NSError {
+//            print("Error: Could not set audio category: \(error), \(error.userInfo)")
+//        }
+//        do { try AVAudioSession.sharedInstance().setActive(true) }
+//        catch let error as NSError {
+//            print("Error: Could not setActive to true: \(error), \(error.userInfo)")
+//        }
+//        
+//        // initialize ui
+//        resetUIGetReadyForNextWord()
+//        
+//        let container = CKContainer.default()
+//        publicDB = container.publicCloudDatabase
+//        privateDB = container.privateCloudDatabase
+//
+//        // nothing should work if iCloud is not enabled.
+//        checkiCloudTillWorking(container: container) {
+//            DispatchQueue.main.async {
+//                // events
+//                var tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+//                self.transLabel1.addGestureRecognizer(tap)
+//                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+//                self.transLabel2.addGestureRecognizer(tap)
+//                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+//                self.transLabel3.addGestureRecognizer(tap)
+//                tap = UITapGestureRecognizer(target: self, action: #selector(MainController.answerTapped))
+//                self.transLabel4.addGestureRecognizer(tap)
+//                
+//                self.initAllLocalVarsFromCloud {
+//                    self.transitionToNextWord()
+//                }
+//            }
+//        }
 
     }
     
