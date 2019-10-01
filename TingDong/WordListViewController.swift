@@ -16,13 +16,19 @@ class WordListViewController: UIViewController {
         let container = CKContainer.default()
         publicDB = container.publicCloudDatabase
         privateDB = container.privateCloudDatabase
-
-        
+    }
+    
+    @IBAction func DeleteAllTapped(_ sender: UIButton) {
+        removeAllWords()
+    }
+    
+    @IBAction func insertAllTapped(_ sender: UIButton) {
+        generatePublicData()
     }
     
     func generatePublicData() -> Void {
         // load json file into array obj
-        if let path = Bundle.main.path(forResource: "words_mini", ofType: "json") {
+        if let path = Bundle.main.path(forResource: "words", ofType: "json") {
             do {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
                 do {
@@ -59,6 +65,17 @@ class WordListViewController: UIViewController {
             }
         }
     }
+    
+    func removeAllWords() {
+        let query = CKQuery(recordType: "Word", predicate: NSPredicate(format: "TRUEPREDICATE", argumentArray: nil))
+        let myDelete = iCloudDelete(cloudDB: publicDB, countDownLabel: countDownLabel)
+        myDelete.delete(query: query) { () in
+            DispatchQueue.main.async {
+                self.countDownLabel.text = "all done!"
+            }
+            print("all done!")
+        }
+    }
 }
 
 struct WordDto: Codable {
@@ -69,4 +86,60 @@ struct WordDto: Codable {
         case word = "w"
         case translation = "t"
     }
+}
+
+class iCloudDelete {
+
+    private let cloudDB: CKDatabase
+    private var recordIDsToDelete = [CKRecord.ID]()
+    private var onAllQueriesCompleted : (()->())?
+    private var label: UILabel
+
+    public var resultsLimit = 100 // default is 100
+
+    init(cloudDB: CKDatabase, countDownLabel: UILabel){
+        self.cloudDB = cloudDB
+        self.label = countDownLabel
+   }
+
+   func delete(query: CKQuery, onComplete: @escaping ()->Void) {
+       onAllQueriesCompleted = onComplete
+       add(queryOperation: CKQueryOperation(query: query))
+   }
+
+   private func add(queryOperation: CKQueryOperation) {
+       queryOperation.resultsLimit = resultsLimit
+       queryOperation.queryCompletionBlock = queryDeleteCompletionBlock
+       queryOperation.recordFetchedBlock = recordFetched
+       cloudDB.add(queryOperation)
+   }
+
+    private func queryDeleteCompletionBlock(cursor: CKQueryOperation.Cursor?, error: Error?) {
+        print("-----------------------")
+        DispatchQueue.main.async {
+            self.label.text = self.recordIDsToDelete.last?.recordName
+        }
+        delete(ids: recordIDsToDelete) {
+            self.recordIDsToDelete.removeAll()
+
+            if let cursor = cursor {
+                self.add(queryOperation: CKQueryOperation(cursor: cursor))
+            } else {
+                self.onAllQueriesCompleted?()
+            }
+        }
+   }
+
+   private func recordFetched(record: CKRecord) {
+       print("RECORD fetched: \(record.recordID.recordName)")
+       recordIDsToDelete.append(record.recordID)
+   }
+
+    private func delete(ids: [CKRecord.ID], onComplete: @escaping ()->Void) {
+       let delete = CKModifyRecordsOperation(recordsToSave: nil, recordIDsToDelete: ids)
+       delete.completionBlock = {
+           onComplete()
+       }
+       cloudDB.add(delete)
+   }
 }
