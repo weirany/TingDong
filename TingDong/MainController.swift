@@ -3,7 +3,7 @@ import CloudKit
 import AVFoundation
 
 // todo:
-// # code to rehydrate the public word list on production
+// # unlink admin UI for release version
 // # done!
 
 class MainController: UIViewController {
