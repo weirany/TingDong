@@ -1,6 +1,7 @@
 import UIKit
 import CloudKit
 import AVFoundation
+import StoreKit
 
 // todo:
 // # none
@@ -77,6 +78,14 @@ class MainController: UIViewController {
                 self.transLabel4.addGestureRecognizer(tap)
 
                 self.initAllLocalVarsFromCloud {
+                    // time to rate the app?
+                    if #available(iOS 10.3,*) {
+                        if self.latestStateCount.f < 42000 {
+                            DispatchQueue.main.async {
+                                SKStoreReviewController.requestReview()
+                            }
+                        }
+                    }
                     self.transitionToNextWord()
                 }
             }
