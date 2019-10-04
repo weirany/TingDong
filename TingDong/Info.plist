@@ -4,8 +4,6 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>CFBundleDisplayName</key>
 	<string>听懂</string>
 	<key>CFBundleExecutable</key>
@@ -22,6 +20,8 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
