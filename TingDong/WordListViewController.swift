@@ -33,7 +33,9 @@ class WordListViewController: UIViewController {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
                 do {
                     let words = try JSONDecoder().decode([WordDto].self, from: data)
-                    addNewWordToPublicUntilDone(wordId: 1, words: words)
+                    var publicWordListInsertCurrentWordId = UserDefaults.standard.integer(forKey: "publicWordListInsertCurrentWordId")
+                    if publicWordListInsertCurrentWordId == 0 { publicWordListInsertCurrentWordId = 1 }
+                    addNewWordToPublicUntilDone(wordId: publicWordListInsertCurrentWordId, words: words)
                 } catch {
                     print(error)
                 }
@@ -59,7 +61,11 @@ class WordListViewController: UIViewController {
                     self.countDownLabel.text = "\(wordId) / \(words.count)"
                     let nextWordId = wordId + 1
                     if nextWordId <= words.count {
+                        UserDefaults.standard.set(nextWordId, forKey: "publicWordListInsertCurrentWordId")
                         self.addNewWordToPublicUntilDone(wordId: nextWordId, words: words)
+                    }
+                    else {
+                        self.countDownLabel.text = "\(wordId) / \(words.count) and all done!"
                     }
                 }
             }
@@ -72,6 +78,7 @@ class WordListViewController: UIViewController {
         myDelete.delete(query: query) { () in
             DispatchQueue.main.async {
                 self.countDownLabel.text = "all done!"
+                UserDefaults.standard.set(0, forKey: "publicWordListInsertCurrentWordId")
             }
             print("all done!")
         }
