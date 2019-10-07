@@ -58,7 +58,7 @@ class MainController: UIViewController {
         }
 
         // initialize ui
-        resetUIGetReadyForNextWord()
+        clearAnswers()
 
         let container = CKContainer.default()
         publicDB = container.publicCloudDatabase
@@ -114,6 +114,11 @@ class MainController: UIViewController {
                     self.correctAnswerIndex = Int.random(in: 0..<4)
                     var trans = self.nextThreeOtherWordTrans!
                     trans.insert(self.nextWord!.translation, at: self.correctAnswerIndex)
+                    self.clearAnswers()
+                    self.transLabel1.alpha = 1
+                    self.transLabel2.alpha = 1
+                    self.transLabel3.alpha = 1
+                    self.transLabel4.alpha = 1
                     self.transLabel1.text = trans[0]
                     self.transLabel2.text = trans[1]
                     self.transLabel3.text = trans[2]
@@ -145,7 +150,7 @@ class MainController: UIViewController {
     
     func stopSpeaking() {
         timer?.invalidate()
-        synthesizer.stopSpeaking(at: .word)
+        synthesizer.stopSpeaking(at: .immediate)
         speakRate = 0.5
     }
     
@@ -546,7 +551,7 @@ class MainController: UIViewController {
         
         if answered {
             canAnswerNow = false
-            resetUIGetReadyForNextWord()
+            clearAnswers()
             transitionToNextWord()
         }
         else {
@@ -554,30 +559,25 @@ class MainController: UIViewController {
             let tappedIndex = sender.view?.tag
             self.handleAnswer(hasCorrectAnswer: tappedIndex == self.correctAnswerIndex) { () in
                 DispatchQueue.main.async {
-                    let animation = {
-                        self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
-                        self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
-                        self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
-                        self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
-                    }
-                    UIView.animate(withDuration: 1.0, delay: 0, options: .curveEaseInOut,
-                                   animations: animation ) { (finished: Bool) in
-                    }
+                    self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
+                    self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
+                    self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
+                    self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
                 }
             }
         }
     }
     
-    func resetUIGetReadyForNextWord() {
+    func clearAnswers() {
         transLabel1.text = ""
         transLabel2.text = ""
         transLabel3.text = ""
         transLabel4.text = ""
         
-        transLabel1.alpha = 1
-        transLabel2.alpha = 1
-        transLabel3.alpha = 1
-        transLabel4.alpha = 1
+        transLabel1.alpha = 0
+        transLabel2.alpha = 0
+        transLabel3.alpha = 0
+        transLabel4.alpha = 0
     }
     
     func readUserIdFromCloud(complete: @escaping (_ instance: String) -> ()) {
