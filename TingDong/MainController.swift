@@ -560,10 +560,22 @@ class MainController: UIViewController {
             let tappedIndex = sender.view?.tag
             self.handleAnswer(hasCorrectAnswer: tappedIndex == self.correctAnswerIndex) { () in
                 DispatchQueue.main.async {
-                    self.transLabel1.alpha = self.transLabel1.tag == self.correctAnswerIndex ? 1 : 0
-                    self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
-                    self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
-                    self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
+                    self.transLabel1.alpha = 0
+                    self.transLabel2.alpha = 0
+                    self.transLabel3.alpha = 0
+                    self.transLabel4.alpha = 0
+                    
+                    var correctLabel = UILabel()
+                    switch self.correctAnswerIndex {
+                    case 0: correctLabel = self.transLabel1
+                    case 1: correctLabel = self.transLabel2
+                    case 2: correctLabel = self.transLabel3
+                    case 3: correctLabel = self.transLabel4
+                    default: fatalError("correct answer index not 0 to 3?!")
+                    }
+                    correctLabel.text! += "\n\(self.nextWord.word)"
+                    correctLabel.alpha = 1
+                    
                     self.canResponseToTap = true
                 }
             }
