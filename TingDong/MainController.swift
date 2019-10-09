@@ -13,7 +13,7 @@ class MainController: UIViewController {
     let synthesizer = AVSpeechSynthesizer()
     var timer: Timer!
     var speakRate: Float = 0.5
-    var canAnswerNow = false
+    var canResponseToTap = false
 
     // local
     var userConfig: UserConfig!
@@ -125,7 +125,7 @@ class MainController: UIViewController {
                     self.transLabel4.text = trans[3]
                     self.answered = false
                     self.speakInALoop()
-                    self.canAnswerNow = true
+                    self.canResponseToTap = true
                 }
             }
         }
@@ -545,16 +545,17 @@ class MainController: UIViewController {
     
     @objc
     func answerTapped(sender:UITapGestureRecognizer) {
-        guard canAnswerNow else {
+        guard canResponseToTap else {
             return
         }
         
         if answered {
-            canAnswerNow = false
+            canResponseToTap = false
             clearAnswers()
             transitionToNextWord()
         }
         else {
+            canResponseToTap = false
             self.answered = true
             let tappedIndex = sender.view?.tag
             self.handleAnswer(hasCorrectAnswer: tappedIndex == self.correctAnswerIndex) { () in
@@ -563,6 +564,7 @@ class MainController: UIViewController {
                     self.transLabel2.alpha = self.transLabel2.tag == self.correctAnswerIndex ? 1 : 0
                     self.transLabel3.alpha = self.transLabel3.tag == self.correctAnswerIndex ? 1 : 0
                     self.transLabel4.alpha = self.transLabel4.tag == self.correctAnswerIndex ? 1 : 0
+                    self.canResponseToTap = true
                 }
             }
         }
