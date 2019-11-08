@@ -12,15 +12,18 @@ public enum ABTesting: Int {
 public class UserConfig {
     var userId: String!
     var aOrB: ABTesting!
+    var maxRange: Int!
 
     init(record: CKRecord) {
         self.userId = (record["userId"] as! String)
         self.aOrB = ABTesting(rawValue: (record["aOrB"] as! Int))
+        self.maxRange = (record["maxRange"] as? Int) ?? StateCount.max
     }
     
     init(userId: String) {
         self.userId = userId
         self.aOrB = ABTesting(rawValue: Int.random(in: 1...2))
+        self.maxRange = StateCount.max
     }
 }
 
@@ -181,11 +184,10 @@ public class TouchedOrNot {
         self.untouched = Util.stringToIntArray(str: untouchedStr)
     }
     
-    var randomFWordId: Int {
-        guard untouched.count > 0 else {
-            fatalError("trying to get a random F state word while no more untouched words?!")
-        }
-        return untouched[Int.random(in: 0..<untouched.count)]
+    func getRandomUntouchedInRangeIfAny(config: UserConfig) -> Int? {
+        let untouchedInRange = untouched.filter { $0 <= config.maxRange }
+        if untouchedInRange.count == 0 { return nil }
+        else { return untouchedInRange[Int.random(in: 0..<untouchedInRange.count)] }
     }
     
     // return 3 random distinct wordIds from touched word list, not including the given wordId.

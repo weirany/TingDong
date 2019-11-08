@@ -80,7 +80,7 @@ class MainController: UIViewController {
                 self.initAllLocalVarsFromCloud {
                     // time to rate the app?
                     if #available(iOS 10.3,*) {
-                        if self.latestStateCount.f < 42000 {
+                        if self.latestStateCount.sum > 100 {
                             DispatchQueue.main.async {
                                 SKStoreReviewController.requestReview()
                             }
@@ -266,11 +266,11 @@ class MainController: UIViewController {
     }
     
     func readNextWord(completion: @escaping (_ word: Word, _ aeword: AEWord) -> Void) {
-        // if Cx4 > Sum(touched) and F is not empty: get from F.
-        if (self.latestStateCount.c * 4 > self.latestStateCount.sum && (self.latestStateCount.sum < StateCount.max)) {
-            let fWordId = touchedOrNot.randomFWordId
-            self.readWordFromCloud(wordId: fWordId) { (word) in
-                completion(word, AEWord(wordId: fWordId))
+        // if Cx4 > Sum(touched) and still have untouched word in range: get from untouched in range.
+        if self.latestStateCount.c * 4 > self.latestStateCount.sum,
+            let wordId = self.touchedOrNot.getRandomUntouchedInRangeIfAny(config: self.userConfig) {
+            self.readWordFromCloud(wordId: wordId) { (word) in
+                completion(word, AEWord(wordId: wordId))
             }
         }
         else {
@@ -281,10 +281,9 @@ class MainController: UIViewController {
                     }
                 }
                 else {
-                    if self.latestStateCount.sum < StateCount.max {
-                        let fWordId = self.touchedOrNot.randomFWordId
-                        self.readWordFromCloud(wordId: fWordId) { (word) in
-                            completion(word, AEWord(wordId: fWordId))
+                    if let wordId = self.touchedOrNot.getRandomUntouchedInRangeIfAny(config: self.userConfig) {
+                        self.readWordFromCloud(wordId: wordId) { (word) in
+                            completion(word, AEWord(wordId: wordId))
                         }
                     }
                     else {
@@ -495,6 +494,7 @@ class MainController: UIViewController {
         let record = CKRecord(recordType: "UserConfig")
         record.setValue(self.userConfig.userId, forKey: "userId")
         record.setValue(self.userConfig.aOrB.rawValue, forKey: "aOrB")
+        record.setValue(self.userConfig.maxRange, forKey: "maxRange")
         publicDB.save(record) { (rec, error) in
             if let error = error {
                 fatalError(error.localizedDescription)
