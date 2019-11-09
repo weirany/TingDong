@@ -44,6 +44,9 @@ class MainController: UIViewController {
     @IBOutlet weak var transLabel3: UILabel!
     @IBOutlet weak var transLabel4: UILabel!
     
+    @IBOutlet weak var maxRangeLabel: UILabel!
+    @IBOutlet weak var maxRangeSlider: UISlider!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -207,6 +210,9 @@ class MainController: UIViewController {
                 }
                 else {
                     fatalError("Got nil while getting user config from cloud?!")
+                }
+                DispatchQueue.main.async {
+                    self.updateSlider()
                 }
                 self.readStateCountFromCloud(0) { (record) in
                     if let record = record {
@@ -433,6 +439,8 @@ class MainController: UIViewController {
     func readUserConfigFromCloud(_ userId: String, completion: @escaping (_ record: CKRecord?) -> Void) {
         let pred = NSPredicate(format: "userId = %@", userId)
         let query = CKQuery(recordType: "UserConfig", predicate: pred)
+        let sort = NSSortDescriptor(key: "creationDate", ascending: false)
+        query.sortDescriptors = [sort]
         let queryOp = CKQueryOperation(query: query)
         var result: CKRecord? = nil
         queryOp.resultsLimit = 1
@@ -604,5 +612,23 @@ class MainController: UIViewController {
                 complete(recordID.recordName)
             }
         }
+    }
+    
+    @IBAction func sliderValueChanged(_ sender: UISlider) {
+        let newValue = Int(sender.value)
+        // update needed only when value is different
+        if userConfig.maxRange != newValue {
+            userConfig.maxRange = newValue
+            writeUserConfigToCloud { (_) in
+                DispatchQueue.main.async {
+                    self.updateSlider()
+                }
+            }
+        }
+    }
+    
+    func updateSlider() {
+        maxRangeSlider.value = Float(userConfig.maxRange ?? StateCount.max)
+        maxRangeLabel.text = "词汇量 → \(userConfig.maxRange ?? StateCount.max)  "
     }
 }
