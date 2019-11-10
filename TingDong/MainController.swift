@@ -13,6 +13,7 @@ class MainController: UIViewController {
     let synthesizer = AVSpeechSynthesizer()
     var speakRate: Float = 0.5
     var canResponseToTap = false
+    let maxRangeOneStep: Float = 100
 
     // local
     var userConfig: UserConfig!
@@ -613,7 +614,8 @@ class MainController: UIViewController {
     }
     
     @IBAction func sliderValueChanged(_ sender: UISlider) {
-        let newValue = Int(sender.value)
+        let newValueFloat = ceil(sender.value / maxRangeOneStep) * maxRangeOneStep
+        let newValue = Int(newValueFloat) > StateCount.max ? StateCount.max : Int(newValueFloat)
         // update needed only when value is different
         if userConfig.maxRange != newValue {
             userConfig.maxRange = newValue
