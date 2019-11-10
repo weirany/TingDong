@@ -11,7 +11,6 @@ class MainController: UIViewController {
     var publicDB: CKDatabase!
     var privateDB: CKDatabase!
     let synthesizer = AVSpeechSynthesizer()
-    var timer: Timer!
     var speakRate: Float = 0.5
     var canResponseToTap = false
 
@@ -46,6 +45,8 @@ class MainController: UIViewController {
     
     @IBOutlet weak var maxRangeLabel: UILabel!
     @IBOutlet weak var maxRangeSlider: UISlider!
+    
+    @IBOutlet weak var playAgainButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -127,7 +128,8 @@ class MainController: UIViewController {
                     self.transLabel3.text = trans[2]
                     self.transLabel4.text = trans[3]
                     self.answered = false
-                    self.speakInALoop()
+                    self.speak()
+                    self.playAgainButton.isEnabled = true
                     self.canResponseToTap = true
                 }
             }
@@ -146,13 +148,7 @@ class MainController: UIViewController {
         }
     }
     
-    func speakInALoop() {
-        speak()
-        timer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(speak), userInfo: nil, repeats: true)
-    }
-    
     func stopSpeaking() {
-        timer?.invalidate()
         synthesizer.stopSpeaking(at: .immediate)
         speakRate = 0.5
     }
@@ -600,6 +596,8 @@ class MainController: UIViewController {
         transLabel2.alpha = 0
         transLabel3.alpha = 0
         transLabel4.alpha = 0
+        
+        playAgainButton.isEnabled = false
     }
     
     func readUserIdFromCloud(complete: @escaping (_ instance: String) -> ()) {
@@ -630,5 +628,9 @@ class MainController: UIViewController {
     func updateSlider() {
         maxRangeSlider.value = Float(userConfig.maxRange ?? StateCount.max)
         maxRangeLabel.text = "词汇量 → \(userConfig.maxRange ?? StateCount.max)  "
+    }
+    
+    @IBAction func playAgainTapped(_ sender: UIButton) {
+        speak()
     }
 }

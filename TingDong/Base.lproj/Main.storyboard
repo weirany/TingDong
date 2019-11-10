@@ -165,6 +165,9 @@
                                 <rect key="frame" x="20" y="313" width="374" height="41"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="24"/>
                                 <state key="normal" title="再播放一次 🗣"/>
+                                <connections>
+                                    <action selector="playAgainTapped:" destination="BYZ-38-t0r" eventType="touchUpInside" id="UPL-An-rKU"/>
+                                </connections>
                             </button>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="0Nz-Q7-nxE">
                                 <rect key="frame" x="20" y="374" width="374" height="488"/>
@@ -223,6 +226,7 @@
                         <outlet property="master7" destination="JML-Sq-UZK" id="1iT-Gf-2Vm"/>
                         <outlet property="maxRangeLabel" destination="RMG-Lj-Ky7" id="ojR-Nh-gQB"/>
                         <outlet property="maxRangeSlider" destination="Cxi-mp-e6L" id="Vfc-fM-Pep"/>
+                        <outlet property="playAgainButton" destination="xHe-C0-zdO" id="5sb-8b-Axy"/>
                         <outlet property="transLabel1" destination="I89-iy-gaJ" id="kN5-i6-rtO"/>
                         <outlet property="transLabel2" destination="3wB-aU-PgV" id="Kwh-rY-OY1"/>
                         <outlet property="transLabel3" destination="sSv-H7-et8" id="lm4-pD-bkx"/>
